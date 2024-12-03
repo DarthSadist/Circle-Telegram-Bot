@@ -9,10 +9,28 @@ import cv2
 import numpy as np
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 import glob
+import sys
 
-load_dotenv()
-bot = telebot.TeleBot(os.getenv('TOKEN'))
-executor = ThreadPoolExecutor(max_workers=3)
+# Загрузка и проверка переменных окружения
+if not load_dotenv():
+    print("❌ Ошибка: Файл .env не найден!")
+    print("1. Создайте файл .env на основе .env.example")
+    print("2. Добавьте в него ваш токен бота")
+    sys.exit(1)
+
+TOKEN = os.getenv('TOKEN')
+if not TOKEN:
+    print("❌ Ошибка: TOKEN не найден в файле .env!")
+    print("1. Убедитесь, что в файле .env есть строка TOKEN=your_token_here")
+    print("2. Замените your_token_here на ваш токен от @BotFather")
+    sys.exit(1)
+
+try:
+    bot = telebot.TeleBot(TOKEN)
+    executor = ThreadPoolExecutor(max_workers=3)
+except Exception as e:
+    print(f"❌ Ошибка при инициализации бота: {str(e)}")
+    sys.exit(1)
 
 def help_markup():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
