@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 import cv2
 import numpy as np
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
+import glob
 
 load_dotenv()
 bot = telebot.TeleBot(os.getenv('TOKEN'))
@@ -129,6 +130,31 @@ def process_video(input_path, output_path):
         print(f"❌ Ошибка при обработке видео: {str(e)}")
         raise Exception(f"Ошибка при обработке видео: {str(e)}")
 
+def cleanup_temp_files():
+    """Очистка всех временных файлов"""
+    try:
+        # Удаляем все временные файлы moviepy
+        temp_files = glob.glob("*TEMP_MPY_*")
+        for temp_file in temp_files:
+            try:
+                os.remove(temp_file)
+                print(f"Удален временный файл: {temp_file}")
+            except Exception as e:
+                print(f"Ошибка при удалении {temp_file}: {str(e)}")
+        
+        # Удаляем файлы с определенными паттернами
+        patterns = ["*_resized.mp4", "sigma_video.mp4"]
+        for pattern in patterns:
+            files = glob.glob(pattern)
+            for file in files:
+                try:
+                    os.remove(file)
+                    print(f"Удален файл: {file}")
+                except Exception as e:
+                    print(f"Ошибка при удалении {file}: {str(e)}")
+    except Exception as e:
+        print(f"Ошибка при очистке временных файлов: {str(e)}")
+
 @bot.message_handler(content_types=['video'])
 def video(message):
     try:
@@ -145,43 +171,54 @@ def video(message):
         bot.send_message(message.chat.id, 'Пожалуйста, подождите')
         print("Начинаем обработку видео...")
         
-        # Создаем временные файлы
-        with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as input_file, \
-             tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as output_file:
-            
-            # Скачиваем видео
-            print("Скачиваем видео...")
-            file_info = bot.get_file(message.video.file_id)
-            downloaded_file = bot.download_file(file_info.file_path)
-            input_file.write(downloaded_file)
-            input_file.flush()
-            print("Видео успешно скачано")
-            
-            # Обрабатываем видео в отдельном потоке
-            print("Запускаем обработку видео в отдельном потоке...")
-            future = executor.submit(process_video, input_file.name, output_file.name)
-            future.result()
-            
-            # Отправляем результат
-            print("Отправляем обработанное видео пользователю...")
-            with open(output_file.name, 'rb') as result_file:
-                bot.send_video_note(message.chat.id, result_file)
-            print("Видео успешно отправлено")
-            
+        try:
+            # Создаем временные файлы
+            with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as input_file, \
+                 tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as output_file:
+                
+                # Скачиваем видео
+                print("Скачиваем видео...")
+                file_info = bot.get_file(message.video.file_id)
+                downloaded_file = bot.download_file(file_info.file_path)
+                input_file.write(downloaded_file)
+                input_file.flush()
+                print("Видео успешно скачано")
+                
+                # Обрабатываем видео в отдельном потоке
+                print("Запускаем обработку видео в отдельном потоке...")
+                future = executor.submit(process_video, input_file.name, output_file.name)
+                future.result()
+                
+                # Отправляем результат
+                print("Отправляем обработанное видео пользователю...")
+                with open(output_file.name, 'rb') as result_file:
+                    bot.send_video_note(message.chat.id, result_file)
+                print("Видео успешно отправлено")
+        
+        finally:
             # Удаляем временные файлы
-            os.unlink(input_file.name)
-            os.unlink(output_file.name)
-            print("Временные файлы удалены")
-            print("Обработка видео завершена успешно\n")
+            try:
+                os.unlink(input_file.name)
+                os.unlink(output_file.name)
+                print("Временные файлы удалены")
+                # Очищаем все оставшиеся временные файлы
+                cleanup_temp_files()
+                print("Очистка временных файлов завершена")
+            except Exception as e:
+                print(f"Ошибка при удалении файлов: {str(e)}")
             
     except Exception as e:
         error_message = str(e)
         print(f"❌ Ошибка при обработке видео: {error_message}")
         bot.send_message(message.chat.id, f'Произошла ошибка при обработке видео: {error_message}')
+        # Пытаемся очистить временные файлы даже в случае ошибки
+        cleanup_temp_files()
 
 if __name__ == '__main__':
     try:
         print("Бот запущен...")
+        # Очищаем временные файлы при запуске
+        cleanup_temp_files()
         bot.infinity_polling()
     except Exception as e:
         print(f"Произошла ошибка: {e}")
