@@ -63,3 +63,390 @@
 2024-12-04 01:25:19,057 - circle_bot - INFO - Видео успешно скачано от пользователя Maltsev_Denis_Vyacheslavovich
 2024-12-04 01:25:27,347 - circle_bot - INFO - Видео успешно обработано и отправлено пользователю Maltsev_Denis_Vyacheslavovich
 2024-12-04 01:25:27,349 - circle_bot - INFO - Временные файлы очищены для пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-04 01:33:51,284 - TeleBot - ERROR - Infinity polling: polling exited
+2024-12-04 01:33:51,287 - TeleBot - ERROR - Break infinity polling
+2024-12-04 01:33:54,324 - circle_bot - INFO - Бот успешно инициализирован
+2024-12-04 01:33:54,325 - circle_bot - INFO - Бот запущен
+2024-12-04 01:34:07,697 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запустил бота
+2024-12-04 01:34:14,767 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл настройки
+2024-12-04 01:34:21,881 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл настройки размера
+2024-12-04 01:34:40,401 - circle_bot - INFO - Пользователь den_test_circle_bot (ID: 7712023360) открыл настройки
+2024-12-04 01:37:08,781 - TeleBot - ERROR - Infinity polling: polling exited
+2024-12-04 01:37:08,781 - TeleBot - ERROR - Break infinity polling
+2024-12-04 01:37:11,914 - circle_bot - INFO - Бот успешно инициализирован
+2024-12-04 01:37:11,914 - circle_bot - INFO - Бот запущен
+2024-12-04 01:37:22,946 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запустил бота
+2024-12-04 01:37:29,276 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запросил статистику
+2024-12-04 01:37:29,277 - circle_bot - INFO - Статистика не найдена для пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 01:39:01,569 - TeleBot - ERROR - Infinity polling: polling exited
+2024-12-04 01:39:01,569 - TeleBot - ERROR - Break infinity polling
+2024-12-04 01:39:04,400 - circle_bot - INFO - Бот успешно инициализирован
+2024-12-04 01:39:04,400 - circle_bot - INFO - Бот запущен
+2024-12-04 01:39:09,322 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запустил бота
+2024-12-04 01:39:09,323 - circle_bot - INFO - Создана клавиатура с основными кнопками меню
+2024-12-04 01:39:11,107 - circle_bot - INFO - Получено текстовое сообщение от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478): ❓ помощь
+2024-12-04 01:39:11,108 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запросил помощь через текстовое меню
+2024-12-04 01:39:11,108 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запросил справку
+2024-12-04 01:39:11,316 - circle_bot - INFO - Отправлена справочная информация пользователю Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 01:39:40,132 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+Размер файла: 8.09 МБ
+2024-12-04 01:39:40,134 - circle_bot - INFO - Обновлена статистика пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478):
+Обработано видео: 0 → 1
+Общий размер: 0.00 МБ → 8.09 МБ
+2024-12-04 01:39:40,134 - circle_bot - INFO - Настройки пользователя: размер=384, качество=medium
+2024-12-04 01:39:40,331 - circle_bot - INFO - Скачиваем видео...
+2024-12-04 01:39:47,464 - circle_bot - INFO - Видео успешно скачано
+2024-12-04 01:39:47,464 - circle_bot - INFO - Запускаем обработку видео в отдельном потоке...
+2024-12-04 01:39:47,465 - circle_bot - INFO - Начинаем обработку видео...
+2024-12-04 01:39:47,465 - circle_bot - INFO - Настройки: размер=384x384, качество=medium
+2024-12-04 01:39:47,665 - circle_bot - INFO - Длительность видео: 7.00 секунд
+2024-12-04 01:39:47,671 - circle_bot - INFO - Начинаем создание видеозаметки...
+2024-12-04 01:39:47,671 - circle_bot - INFO - Начинаем обработку видео...
+2024-12-04 01:39:47,713 - circle_bot - INFO - Параметры исходного видео:
+- Ширина: 720px
+- Высота: 1280px
+- FPS: 24
+- Количество кадров: 172
+2024-12-04 01:39:47,713 - circle_bot - INFO - Создаем квадратное видео 384x384
+2024-12-04 01:39:47,713 - circle_bot - INFO - Создание временного видео завершено
+2024-12-04 01:39:47,714 - circle_bot - INFO - Начинаем финальную конвертацию через ffmpeg...
+2024-12-04 01:39:47,714 - circle_bot - INFO - Финальный размер файла: 0.00 МБ
+2024-12-04 01:39:47,714 - circle_bot - ERROR - Ошибка при обработке видео: name 'frames_processed' is not defined
+2024-12-04 01:39:47,715 - circle_bot - INFO - Ресурсы видео освобождены
+2024-12-04 01:39:47,715 - circle_bot - ERROR - Ошибка при обработке видео: name 'frames_processed' is not defined
+2024-12-04 01:39:47,717 - circle_bot - INFO - Временные файлы удалены
+2024-12-04 01:39:47,718 - circle_bot - INFO - Очистка временных файлов завершена
+2024-12-04 01:39:47,719 - circle_bot - ERROR - Ошибка при обработке видео: Ошибка при обработке видео: name 'frames_processed' is not defined
+2024-12-04 01:43:39,563 - TeleBot - ERROR - Infinity polling: polling exited
+2024-12-04 01:43:39,563 - TeleBot - ERROR - Break infinity polling
+2024-12-04 01:43:50,113 - circle_bot - INFO - Бот успешно инициализирован
+2024-12-04 01:43:50,114 - circle_bot - INFO - Бот запущен
+2024-12-04 01:43:58,215 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запустил бота
+2024-12-04 01:43:58,215 - circle_bot - INFO - Создана клавиатура с основными кнопками меню
+2024-12-04 01:44:20,612 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+Размер файла: 8.09 МБ
+2024-12-04 01:44:20,612 - circle_bot - INFO - Обновлена статистика пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478):
+Обработано видео: 0 → 1
+Общий размер: 0.00 МБ → 8.09 МБ
+2024-12-04 01:44:20,612 - circle_bot - INFO - Настройки пользователя: размер=384, качество=medium
+2024-12-04 01:44:21,206 - circle_bot - INFO - Скачиваем видео...
+2024-12-04 01:44:28,216 - circle_bot - INFO - Видео успешно скачано
+2024-12-04 01:44:28,217 - circle_bot - INFO - Запускаем обработку видео в отдельном потоке...
+2024-12-04 01:44:28,217 - circle_bot - INFO - Начинаем обработку видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 01:44:28,218 - circle_bot - INFO - Начинаем обработку видео...
+2024-12-04 01:44:28,267 - circle_bot - INFO - Параметры исходного видео: 720x1280, 24 FPS, 172 кадров
+2024-12-04 01:44:28,272 - circle_bot - ERROR - Ошибка при обработке видео: Не удалось создать выходной файл
+2024-12-04 01:44:28,276 - circle_bot - ERROR - Ошибка при обработке видео: Ошибка при обработке видео
+2024-12-04 01:44:29,013 - circle_bot - INFO - Отправляем обработанное видео пользователю...
+2024-12-04 01:44:29,204 - circle_bot - INFO - Временные файлы удалены
+2024-12-04 01:44:29,204 - circle_bot - INFO - Очистка временных файлов завершена
+2024-12-04 01:44:29,205 - circle_bot - ERROR - Ошибка при обработке видео: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: file must be non-empty
+2024-12-04 01:49:58,309 - TeleBot - ERROR - Infinity polling: polling exited
+2024-12-04 01:49:58,310 - TeleBot - ERROR - Break infinity polling
+2024-12-04 01:50:31,990 - circle_bot - INFO - Бот успешно инициализирован
+2024-12-04 01:50:31,990 - circle_bot - INFO - Бот запущен
+2024-12-04 01:50:38,347 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запустил бота
+2024-12-04 01:50:38,347 - circle_bot - INFO - Создана клавиатура с основными кнопками меню
+2024-12-04 01:50:54,963 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+Размер файла: 8.09 МБ
+2024-12-04 01:50:54,964 - circle_bot - INFO - Настройки пользователя: размер=384, качество=medium
+2024-12-04 01:50:54,965 - circle_bot - INFO - Скачиваем видео...
+2024-12-04 01:51:13,324 - circle_bot - INFO - Видео успешно скачано
+2024-12-04 01:51:13,325 - circle_bot - INFO - Запускаем обработку видео...
+2024-12-04 01:51:13,325 - circle_bot - INFO - Начинаем обработку видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 01:51:13,325 - circle_bot - INFO - Начинаем обработку видео...
+2024-12-04 01:51:13,391 - circle_bot - INFO - Параметры исходного видео: 720x1280, 24 FPS, 172 кадров
+2024-12-04 01:51:13,576 - circle_bot - INFO - Обработано 30/172 кадров (17.4%), 163.7 FPS
+2024-12-04 01:51:13,759 - circle_bot - INFO - Обработано 60/172 кадров (34.9%), 163.9 FPS
+2024-12-04 01:51:13,952 - circle_bot - INFO - Обработано 90/172 кадров (52.3%), 161.0 FPS
+2024-12-04 01:51:14,164 - circle_bot - INFO - Обработано 120/172 кадров (69.8%), 155.6 FPS
+2024-12-04 01:51:14,390 - circle_bot - INFO - Обработано 150/172 кадров (87.2%), 150.4 FPS
+2024-12-04 01:51:14,601 - circle_bot - INFO - Обработка OpenCV завершена. Обработано 172 кадров за 1.2 секунд
+2024-12-04 01:51:14,602 - circle_bot - INFO - Конвертируем видео в H.264...
+2024-12-04 01:51:16,159 - circle_bot - INFO - Видео успешно конвертировано в H.264
+2024-12-04 01:51:16,160 - circle_bot - INFO - Видео успешно обработано и сохранено: /tmp/tmpe4afn8hk.mp4
+2024-12-04 01:51:16,161 - circle_bot - INFO - Отправляем обработанное видео пользователю...
+2024-12-04 01:51:18,776 - circle_bot - INFO - Видео успешно отправлено
+2024-12-04 01:52:46,241 - TeleBot - ERROR - Infinity polling: polling exited
+2024-12-04 01:52:46,242 - TeleBot - ERROR - Break infinity polling
+2024-12-04 01:52:48,642 - circle_bot - INFO - Бот успешно инициализирован
+2024-12-04 01:52:48,642 - circle_bot - INFO - Бот запущен
+2024-12-04 01:52:54,888 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запустил бота
+2024-12-04 01:52:54,891 - circle_bot - INFO - Создана клавиатура с основными кнопками меню
+2024-12-04 01:53:17,151 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+Размер файла: 8.09 МБ
+2024-12-04 01:53:17,153 - circle_bot - INFO - Настройки пользователя: размер=384, качество=medium
+2024-12-04 01:53:17,154 - circle_bot - INFO - Скачиваем видео...
+2024-12-04 01:53:33,701 - circle_bot - INFO - Видео успешно скачано
+2024-12-04 01:53:33,702 - circle_bot - INFO - Запускаем обработку видео...
+2024-12-04 01:53:33,702 - circle_bot - INFO - Начинаем обработку видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 01:53:33,702 - circle_bot - INFO - Начинаем обработку видео...
+2024-12-04 01:53:33,756 - circle_bot - INFO - Параметры исходного видео: 720x1280, 24 FPS, 172 кадров
+2024-12-04 01:53:34,073 - circle_bot - INFO - Обработано 30/172 кадров (17.4%), 95.2 FPS
+2024-12-04 01:53:34,335 - circle_bot - INFO - Обработано 60/172 кадров (34.9%), 104.0 FPS
+2024-12-04 01:53:34,575 - circle_bot - INFO - Обработано 90/172 кадров (52.3%), 110.2 FPS
+2024-12-04 01:53:34,828 - circle_bot - INFO - Обработано 120/172 кадров (69.8%), 112.2 FPS
+2024-12-04 01:53:35,034 - circle_bot - INFO - Обработано 150/172 кадров (87.2%), 117.6 FPS
+2024-12-04 01:53:35,187 - circle_bot - INFO - Обработка OpenCV завершена. Обработано 172 кадров за 1.4 секунд
+2024-12-04 01:53:35,188 - circle_bot - INFO - Конвертируем видео в H.264...
+2024-12-04 01:53:36,151 - circle_bot - INFO - Видео успешно конвертировано в H.264
+2024-12-04 01:53:36,152 - circle_bot - INFO - Видео успешно обработано и сохранено: /tmp/tmps42h1tvn.mp4
+2024-12-04 01:53:36,152 - circle_bot - INFO - Отправляем обработанное видео пользователю...
+2024-12-04 01:53:37,950 - circle_bot - INFO - Видео успешно отправлено
+2024-12-04 01:55:01,590 - TeleBot - ERROR - Infinity polling: polling exited
+2024-12-04 01:55:01,590 - TeleBot - ERROR - Break infinity polling
+2024-12-04 01:58:16,777 - circle_bot - INFO - Бот успешно инициализирован
+2024-12-04 01:58:16,778 - circle_bot - INFO - Бот запущен
+2024-12-04 01:58:22,120 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запустил бота
+2024-12-04 01:58:22,121 - circle_bot - INFO - Создана клавиатура с основными кнопками меню
+2024-12-04 01:58:24,697 - circle_bot - INFO - Получено текстовое сообщение от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478): ⚙️ настройки
+2024-12-04 01:58:24,698 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл настройки через текстовое меню
+2024-12-04 01:58:24,701 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл настройки
+2024-12-04 01:58:26,904 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл настройки размера
+2024-12-04 01:58:28,415 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) изменил размер выходной видеозаметки на 640
+2024-12-04 01:58:57,631 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+Размер файла: 8.09 МБ
+2024-12-04 01:58:57,631 - circle_bot - INFO - Настройки пользователя: размер=640, качество=medium
+2024-12-04 01:58:57,875 - circle_bot - INFO - Скачиваем видео...
+2024-12-04 01:59:05,298 - circle_bot - INFO - Видео успешно скачано
+2024-12-04 01:59:05,580 - circle_bot - INFO - Запускаем обработку видео...
+2024-12-04 01:59:05,582 - circle_bot - INFO - Начинаем обработку видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 01:59:05,583 - circle_bot - INFO - Начинаем обработку видео...
+2024-12-04 01:59:05,636 - circle_bot - INFO - Параметры исходного видео: 720x1280, 24 FPS, 172 кадров
+2024-12-04 01:59:05,952 - circle_bot - INFO - Обработано 30/172 кадров (17.4%), 95.4 FPS
+2024-12-04 01:59:06,237 - circle_bot - INFO - Обработано 60/172 кадров (34.9%), 100.1 FPS
+2024-12-04 01:59:06,525 - circle_bot - INFO - Обработано 90/172 кадров (52.3%), 101.4 FPS
+2024-12-04 01:59:06,811 - circle_bot - INFO - Обработано 120/172 кадров (69.8%), 102.3 FPS
+2024-12-04 01:59:07,074 - circle_bot - INFO - Обработано 150/172 кадров (87.2%), 104.5 FPS
+2024-12-04 01:59:07,291 - circle_bot - INFO - Обработка OpenCV завершена. Обработано 172 кадров за 1.7 секунд
+2024-12-04 01:59:07,293 - circle_bot - INFO - Конвертируем видео в H.264...
+2024-12-04 01:59:08,812 - circle_bot - INFO - Видео успешно конвертировано в H.264
+2024-12-04 01:59:08,813 - circle_bot - INFO - Видео успешно обработано и сохранено: /tmp/tmpz07s2f82.mp4
+2024-12-04 01:59:09,012 - circle_bot - INFO - Отправляем обработанное видео пользователю...
+2024-12-04 01:59:11,618 - circle_bot - INFO - Видео успешно отправлено
+2024-12-04 02:00:06,921 - circle_bot - INFO - Получено текстовое сообщение от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478): ❓ помощь
+2024-12-04 02:00:06,921 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запросил помощь через текстовое меню
+2024-12-04 02:00:06,921 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запросил справку
+2024-12-04 02:00:07,126 - circle_bot - INFO - Отправлена справочная информация пользователю Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 02:00:13,656 - circle_bot - INFO - Получено текстовое сообщение от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478): 📊 статистика
+2024-12-04 02:00:13,656 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запросил статистику через текстовое меню
+2024-12-04 02:00:13,656 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запросил статистику
+2024-12-04 02:00:13,657 - circle_bot - INFO - Запрошена статистика для пользователя (ID: 1667948478):
+📊 Ваша статистика:
+Обработано видео: 1
+Общий размер: 8.09 МБ
+2024-12-04 02:00:13,657 - circle_bot - INFO - Статистика пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478):
+- Обработано видео: 1
+- Общий размер: 8.09 МБ
+2024-12-04 02:00:21,772 - circle_bot - INFO - Получено текстовое сообщение от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478): ⚙️ настройки
+2024-12-04 02:00:21,774 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл настройки через текстовое меню
+2024-12-04 02:00:21,774 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл настройки
+2024-12-04 02:00:24,046 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл настройки качества
+2024-12-04 02:00:26,310 - circle_bot - INFO - Пользователь den_test_circle_bot (ID: 7712023360) открыл настройки
+2024-12-04 02:01:10,628 - TeleBot - ERROR - Infinity polling: polling exited
+2024-12-04 02:01:10,629 - TeleBot - ERROR - Break infinity polling
+2024-12-04 02:03:57,655 - circle_bot - INFO - Бот успешно инициализирован
+2024-12-04 02:03:57,655 - circle_bot - INFO - Бот запущен
+2024-12-04 02:04:09,631 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запустил бота
+2024-12-04 02:04:09,633 - circle_bot - INFO - Создана клавиатура с основными кнопками меню
+2024-12-04 02:04:11,470 - circle_bot - INFO - Получено текстовое сообщение от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478): ⚙️ настройки
+2024-12-04 02:04:11,470 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл настройки через текстовое меню
+2024-12-04 02:04:11,470 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл настройки
+2024-12-04 02:04:11,470 - circle_bot - INFO - Созданы настройки по умолчанию для пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 02:04:12,000 - circle_bot - INFO - Текущие настройки пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478):
+- Размер: 384x384
+- Качество: среднее
+2024-12-04 02:04:14,508 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл меню выбора размера
+2024-12-04 02:04:16,875 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) меняет размер видео: 384x384 → 568x568
+2024-12-04 02:04:16,876 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл меню выбора размера
+2024-12-04 02:04:17,265 - circle_bot - INFO - Размер видео успешно изменен для пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 02:04:33,006 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) вернулся в главное меню настроек
+2024-12-04 02:04:33,008 - circle_bot - INFO - Пользователь den_test_circle_bot (ID: 7712023360) открыл настройки
+2024-12-04 02:04:33,008 - circle_bot - INFO - Созданы настройки по умолчанию для пользователя den_test_circle_bot (ID: 7712023360)
+2024-12-04 02:04:33,216 - circle_bot - INFO - Текущие настройки пользователя den_test_circle_bot (ID: 7712023360):
+- Размер: 384x384
+- Качество: среднее
+2024-12-04 02:04:34,329 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл меню выбора качества
+2024-12-04 02:04:36,339 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) меняет качество видео: среднее → среднее
+2024-12-04 02:04:36,339 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл меню выбора качества
+2024-12-04 02:04:36,524 - circle_bot - ERROR - Ошибка при изменении качества видео: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message
+2024-12-04 02:04:36,737 - TeleBot - ERROR - Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: MESSAGE_TOO_LONG
+2024-12-04 02:04:36,739 - TeleBot - ERROR - Exception traceback:
+Traceback (most recent call last):
+  File "/home/denis/Python/Circle-Telegram-Bot-main/circle_bot.py", line 258, in change_quality
+    show_quality(call)
+  File "/home/denis/Python/Circle-Telegram-Bot-main/circle_bot.py", line 199, in show_quality
+    bot.edit_message_text(
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/__init__.py", line 4801, in edit_message_text
+    result = apihelper.edit_message_text(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/apihelper.py", line 1440, in edit_message_text
+    return _make_request(token, method_url, params=payload, method='post')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/apihelper.py", line 168, in _make_request
+    json_result = _check_result(method_name, result)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/apihelper.py", line 195, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/__init__.py", line 1226, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/util.py", line 150, in raise_exceptions
+    raise self.exception_info
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/util.py", line 93, in run
+    task(*args, **kwargs)
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/__init__.py", line 8822, in _run_middlewares_and_handler
+    result = handler['function'](message)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/denis/Python/Circle-Telegram-Bot-main/circle_bot.py", line 272, in change_quality
+    bot.answer_callback_query(call.id, f"❌ {error_msg}", show_alert=True)
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/__init__.py", line 5838, in answer_callback_query
+    return apihelper.answer_callback_query(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/apihelper.py", line 1775, in answer_callback_query
+    return _make_request(token, method_url, params=payload, method='post')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/apihelper.py", line 168, in _make_request
+    json_result = _check_result(method_name, result)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/apihelper.py", line 195, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: MESSAGE_TOO_LONG
+
+2024-12-04 02:04:38,822 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) меняет качество видео: среднее → высокое
+2024-12-04 02:04:38,823 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл меню выбора качества
+2024-12-04 02:04:39,213 - circle_bot - INFO - Качество видео успешно изменено для пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 02:05:04,413 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+Размер файла: 8.09 МБ
+2024-12-04 02:05:04,413 - circle_bot - INFO - Настройки пользователя: размер=568, качество=high
+2024-12-04 02:05:04,600 - circle_bot - INFO - Скачиваем видео...
+2024-12-04 02:05:11,659 - circle_bot - INFO - Видео успешно скачано
+2024-12-04 02:05:11,842 - circle_bot - INFO - Запускаем обработку видео...
+2024-12-04 02:05:11,843 - circle_bot - INFO - Начинаем обработку видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 02:05:11,844 - circle_bot - INFO - Начинаем обработку видео...
+2024-12-04 02:05:11,893 - circle_bot - INFO - Параметры исходного видео: 720x1280, 24 FPS, 172 кадров
+2024-12-04 02:05:12,169 - circle_bot - INFO - Обработано 30/172 кадров (17.4%), 109.8 FPS
+2024-12-04 02:05:12,432 - circle_bot - INFO - Обработано 60/172 кадров (34.9%), 112.0 FPS
+2024-12-04 02:05:12,709 - circle_bot - INFO - Обработано 90/172 кадров (52.3%), 110.6 FPS
+2024-12-04 02:05:13,003 - circle_bot - INFO - Обработано 120/172 кадров (69.8%), 108.3 FPS
+2024-12-04 02:05:13,263 - circle_bot - INFO - Обработано 150/172 кадров (87.2%), 109.7 FPS
+2024-12-04 02:05:13,468 - circle_bot - INFO - Обработка OpenCV завершена. Обработано 172 кадров за 1.6 секунд
+2024-12-04 02:05:13,469 - circle_bot - INFO - Конвертируем видео в H.264...
+2024-12-04 02:05:15,040 - circle_bot - INFO - Видео успешно конвертировано в H.264
+2024-12-04 02:05:15,042 - circle_bot - INFO - Видео успешно обработано и сохранено: /tmp/tmpred5j8pt.mp4
+2024-12-04 02:05:15,234 - circle_bot - INFO - Отправляем обработанное видео пользователю...
+2024-12-04 02:05:20,792 - circle_bot - INFO - Видео успешно отправлено
+2024-12-04 02:06:26,150 - circle_bot - INFO - Получено текстовое сообщение от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478): 📊 статистика
+2024-12-04 02:06:26,151 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запросил статистику через текстовое меню
+2024-12-04 02:06:26,151 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запросил статистику
+2024-12-04 02:06:26,151 - circle_bot - INFO - Запрошена статистика для пользователя (ID: 1667948478):
+📊 Ваша статистика:
+Обработано видео: 1
+Общий размер: 8.09 МБ
+2024-12-04 02:06:26,151 - circle_bot - INFO - Статистика пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478):
+- Обработано видео: 1
+- Общий размер: 8.09 МБ
+2024-12-04 02:06:30,073 - circle_bot - INFO - Получено текстовое сообщение от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478): ⚙️ настройки
+2024-12-04 02:06:30,075 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл настройки через текстовое меню
+2024-12-04 02:06:30,075 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл настройки
+2024-12-04 02:06:30,281 - circle_bot - INFO - Текущие настройки пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478):
+- Размер: 568x568
+- Качество: высокое
+2024-12-04 02:06:32,076 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл меню выбора размера
+2024-12-04 02:06:34,017 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) меняет размер видео: 568x568 → 640x640
+2024-12-04 02:06:34,018 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл меню выбора размера
+2024-12-04 02:06:34,381 - circle_bot - INFO - Размер видео успешно изменен для пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 02:06:37,735 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) вернулся в главное меню настроек
+2024-12-04 02:06:37,736 - circle_bot - INFO - Пользователь den_test_circle_bot (ID: 7712023360) открыл настройки
+2024-12-04 02:06:37,961 - circle_bot - INFO - Текущие настройки пользователя den_test_circle_bot (ID: 7712023360):
+- Размер: 384x384
+- Качество: среднее
+2024-12-04 02:06:39,362 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл меню выбора качества
+2024-12-04 02:06:41,413 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) меняет качество видео: высокое → высокое
+2024-12-04 02:06:41,414 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) открыл меню выбора качества
+2024-12-04 02:06:41,615 - circle_bot - ERROR - Ошибка при изменении качества видео: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message
+2024-12-04 02:06:41,862 - TeleBot - ERROR - Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: MESSAGE_TOO_LONG
+2024-12-04 02:06:41,862 - TeleBot - ERROR - Exception traceback:
+Traceback (most recent call last):
+  File "/home/denis/Python/Circle-Telegram-Bot-main/circle_bot.py", line 258, in change_quality
+    show_quality(call)
+  File "/home/denis/Python/Circle-Telegram-Bot-main/circle_bot.py", line 199, in show_quality
+    bot.edit_message_text(
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/__init__.py", line 4801, in edit_message_text
+    result = apihelper.edit_message_text(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/apihelper.py", line 1440, in edit_message_text
+    return _make_request(token, method_url, params=payload, method='post')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/apihelper.py", line 168, in _make_request
+    json_result = _check_result(method_name, result)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/apihelper.py", line 195, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/__init__.py", line 1226, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/util.py", line 150, in raise_exceptions
+    raise self.exception_info
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/util.py", line 93, in run
+    task(*args, **kwargs)
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/__init__.py", line 8822, in _run_middlewares_and_handler
+    result = handler['function'](message)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/denis/Python/Circle-Telegram-Bot-main/circle_bot.py", line 272, in change_quality
+    bot.answer_callback_query(call.id, f"❌ {error_msg}", show_alert=True)
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/__init__.py", line 5838, in answer_callback_query
+    return apihelper.answer_callback_query(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/apihelper.py", line 1775, in answer_callback_query
+    return _make_request(token, method_url, params=payload, method='post')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/apihelper.py", line 168, in _make_request
+    json_result = _check_result(method_name, result)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/denis/Python/Circle-Telegram-Bot-main/venv/lib/python3.12/site-packages/telebot/apihelper.py", line 195, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: MESSAGE_TOO_LONG
+
+2024-12-04 02:06:59,083 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+Размер файла: 8.09 МБ
+2024-12-04 02:06:59,084 - circle_bot - INFO - Настройки пользователя: размер=640, качество=high
+2024-12-04 02:06:59,274 - circle_bot - INFO - Скачиваем видео...
+2024-12-04 02:07:07,737 - circle_bot - INFO - Видео успешно скачано
+2024-12-04 02:07:07,935 - circle_bot - INFO - Запускаем обработку видео...
+2024-12-04 02:07:07,935 - circle_bot - INFO - Начинаем обработку видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 02:07:07,935 - circle_bot - INFO - Начинаем обработку видео...
+2024-12-04 02:07:07,968 - circle_bot - INFO - Параметры исходного видео: 720x1280, 24 FPS, 172 кадров
+2024-12-04 02:07:08,262 - circle_bot - INFO - Обработано 30/172 кадров (17.4%), 102.5 FPS
+2024-12-04 02:07:08,539 - circle_bot - INFO - Обработано 60/172 кадров (34.9%), 105.2 FPS
+2024-12-04 02:07:08,812 - circle_bot - INFO - Обработано 90/172 кадров (52.3%), 106.7 FPS
+2024-12-04 02:07:09,111 - circle_bot - INFO - Обработано 120/172 кадров (69.8%), 105.0 FPS
+2024-12-04 02:07:09,415 - circle_bot - INFO - Обработано 150/172 кадров (87.2%), 103.7 FPS
+2024-12-04 02:07:09,613 - circle_bot - INFO - Обработка OpenCV завершена. Обработано 172 кадров за 1.6 секунд
+2024-12-04 02:07:09,614 - circle_bot - INFO - Конвертируем видео в H.264...
+2024-12-04 02:07:11,424 - circle_bot - INFO - Видео успешно конвертировано в H.264
+2024-12-04 02:07:11,424 - circle_bot - INFO - Видео успешно обработано и сохранено: /tmp/tmpxtt_ils6.mp4
+2024-12-04 02:07:11,643 - circle_bot - INFO - Отправляем обработанное видео пользователю...
+2024-12-04 02:07:17,223 - circle_bot - INFO - Видео успешно отправлено
+2024-12-04 02:10:36,584 - circle_bot - INFO - Получено текстовое сообщение от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478): ❓ помощь
+2024-12-04 02:10:36,586 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запросил помощь через текстовое меню
+2024-12-04 02:10:36,586 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запросил справку
+2024-12-04 02:10:36,780 - circle_bot - INFO - Отправлена справочная информация пользователю Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 02:10:42,002 - circle_bot - INFO - Получено текстовое сообщение от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478): 📊 статистика
+2024-12-04 02:10:42,002 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запросил статистику через текстовое меню
+2024-12-04 02:10:42,003 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) запросил статистику
+2024-12-04 02:10:42,003 - circle_bot - INFO - Запрошена статистика для пользователя (ID: 1667948478):
+📊 Ваша статистика:
+Обработано видео: 2
+Общий размер: 16.18 МБ
+2024-12-04 02:10:42,003 - circle_bot - INFO - Статистика пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478):
+- Обработано видео: 2
+- Общий размер: 16.18 МБ

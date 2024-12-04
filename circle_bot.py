@@ -14,6 +14,7 @@ import time
 import logging
 from collections import defaultdict
 from datetime import datetime
+import subprocess
 
 # Настройка логирования
 logging.basicConfig(
@@ -22,6 +23,33 @@ logging.basicConfig(
     level=logging.INFO
 )
 logger = logging.getLogger('circle_bot')
+
+# Добавляем вывод в консоль
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+def log_and_print(message, level=logging.INFO):
+    """Функция для логирования и вывода в консоль"""
+    if level == logging.INFO:
+        logger.info(message)
+    elif level == logging.WARNING:
+        logger.warning(message)
+    elif level == logging.ERROR:
+        logger.error(message)
+    elif level == logging.CRITICAL:
+        logger.critical(message)
+    
+    # Добавляем эмодзи в зависимости от уровня логирования
+    emoji = {
+        logging.INFO: "ℹ️",
+        logging.WARNING: "⚠️",
+        logging.ERROR: "❌",
+        logging.CRITICAL: "🚨"
+    }
+    print(f"{emoji.get(level, '')} {message}")
 
 # Загрузка и проверка переменных окружения
 if not load_dotenv():
@@ -74,12 +102,196 @@ user_stats = defaultdict(lambda: {"processed_videos": 0, "total_size_mb": 0})
 def get_user_stats(user_id):
     """Получение статистики пользователя"""
     stats = user_stats[user_id]
-    return (f"📊 Ваша статистика:\n"
-            f"Обработано видео: {stats['processed_videos']}\n"
-            f"Общий размер: {stats['total_size_mb']:.2f} МБ")
+    stats_text = (f"📊 Ваша статистика:\n"
+                f"Обработано видео: {stats['processed_videos']}\n"
+                f"Общий размер: {stats['total_size_mb']:.2f} МБ")
+    
+    log_and_print(f"Запрошена статистика для пользователя (ID: {user_id}):\n{stats_text}")
+    return stats_text
+
+@bot.message_handler(commands=['stats'])
+def stats_command(message):
+    user = message.from_user
+    user_id = user.id
+    username = user.username or "Unknown"
+    
+    log_and_print(f"Пользователь {username} (ID: {user_id}) запросил статистику")
+    
+    if user_id not in user_stats:
+        log_and_print(f"Статистика не найдена для пользователя {username} (ID: {user_id})")
+        stats_text = "У вас пока нет статистики. Отправьте мне видео для обработки!"
+    else:
+        stats = user_stats[user_id]
+        stats_text = get_user_stats(user_id)
+        log_and_print(
+            f"Статистика пользователя {username} (ID: {user_id}):\n"
+            f"- Обработано видео: {stats['processed_videos']}\n"
+            f"- Общий размер: {stats['total_size_mb']:.2f} МБ"
+        )
+    
+    bot.reply_to(message, stats_text)
+
+@bot.callback_query_handler(func=lambda call: call.data == "show_sizes")
+def show_sizes(call):
+    """Показать меню выбора размера видео"""
+    user = call.from_user
+    log_and_print(f"Пользователь {user.username} (ID: {user.id}) открыл меню выбора размера")
+    
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    sizes = [384, 480, 568, 640]
+    size_buttons = []
+    
+    current_size = user_settings[call.from_user.id]["video_size"]
+    
+    for size in sizes:
+        marker = "✅" if size == current_size else ""
+        btn = types.InlineKeyboardButton(
+            f"{marker} {size}x{size}", 
+            callback_data=f"size_{size}"
+        )
+        size_buttons.append(btn)
+    
+    back_btn = types.InlineKeyboardButton("⬅️ Назад", callback_data="back_to_settings")
+    markup.add(*size_buttons, back_btn)
+    
+    bot.edit_message_text(
+        f"🎯 Выберите размер видео\n"
+        f"Текущий размер: {current_size}x{current_size}",
+        call.message.chat.id,
+        call.message.message_id,
+        reply_markup=markup
+    )
+
+@bot.callback_query_handler(func=lambda call: call.data == "show_quality")
+def show_quality(call):
+    """Показать меню выбора качества видео"""
+    user = call.from_user
+    log_and_print(f"Пользователь {user.username} (ID: {user.id}) открыл меню выбора качества")
+    
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    qualities = {
+        'high': '🎯 Высокое',
+        'medium': '🎯 Среднее',
+        'low': '🎯 Низкое'
+    }
+    
+    current_quality = user_settings[call.from_user.id]["video_quality"]
+    quality_buttons = []
+    
+    for quality_key, quality_name in qualities.items():
+        marker = "✅" if quality_key == current_quality else ""
+        btn = types.InlineKeyboardButton(
+            f"{marker} {quality_name}", 
+            callback_data=f"quality_{quality_key}"
+        )
+        quality_buttons.append(btn)
+    
+    back_btn = types.InlineKeyboardButton("⬅️ Назад", callback_data="back_to_settings")
+    markup.add(*quality_buttons, back_btn)
+    
+    # Получаем текстовое описание текущего качества
+    current_quality_text = {
+        'high': 'высокое',
+        'medium': 'среднее',
+        'low': 'низкое'
+    }.get(current_quality, 'среднее')
+    
+    bot.edit_message_text(
+        f"🎨 Выберите качество видео\n"
+        f"Текущее качество: {current_quality_text}",
+        call.message.chat.id,
+        call.message.message_id,
+        reply_markup=markup
+    )
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("size_"))
+def change_size(call):
+    """Изменить размер видео"""
+    try:
+        user = call.from_user
+        new_size = int(call.data.split('_')[1])
+        old_size = user_settings[user.id]["video_size"]
+        
+        log_and_print(f"Пользователь {user.username} (ID: {user.id}) меняет размер видео: {old_size}x{old_size} → {new_size}x{new_size}")
+        
+        user_settings[user.id]["video_size"] = new_size
+        
+        # Показываем меню размеров с обновленным значением
+        show_sizes(call)
+        
+        # Отправляем уведомление
+        bot.answer_callback_query(
+            call.id,
+            f"✅ Размер видео изменен на {new_size}x{new_size}",
+            show_alert=True
+        )
+        
+        log_and_print(f"Размер видео успешно изменен для пользователя {user.username} (ID: {user.id})")
+        
+    except Exception as e:
+        error_msg = f"Ошибка при изменении размера видео: {str(e)}"
+        log_and_print(error_msg, logging.ERROR)
+        bot.answer_callback_query(call.id, f"❌ {error_msg}", show_alert=True)
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("quality_"))
+def change_quality(call):
+    """Изменить качество видео"""
+    try:
+        user = call.from_user
+        new_quality = call.data.split('_')[1]
+        old_quality = user_settings[user.id]["video_quality"]
+        
+        # Получаем текстовые описания для логов
+        quality_text = {
+            'high': 'высокое',
+            'medium': 'среднее',
+            'low': 'низкое'
+        }
+        old_quality_text = quality_text.get(old_quality, 'среднее')
+        new_quality_text = quality_text.get(new_quality, 'среднее')
+        
+        log_and_print(f"Пользователь {user.username} (ID: {user.id}) меняет качество видео: {old_quality_text} → {new_quality_text}")
+        
+        user_settings[user.id]["video_quality"] = new_quality
+        
+        # Показываем меню качества с обновленным значением
+        show_quality(call)
+        
+        # Отправляем уведомление
+        bot.answer_callback_query(
+            call.id,
+            f"✅ Качество видео изменено на {new_quality_text}",
+            show_alert=True
+        )
+        
+        log_and_print(f"Качество видео успешно изменено для пользователя {user.username} (ID: {user.id})")
+        
+    except Exception as e:
+        error_msg = f"Ошибка при изменении качества видео: {str(e)}"
+        log_and_print(error_msg, logging.ERROR)
+        bot.answer_callback_query(call.id, f"❌ {error_msg}", show_alert=True)
+
+@bot.callback_query_handler(func=lambda call: call.data == "back_to_settings")
+def back_to_settings(call):
+    """Вернуться в главное меню настроек"""
+    user = call.from_user
+    log_and_print(f"Пользователь {user.username} (ID: {user.id}) вернулся в главное меню настроек")
+    settings_command(call.message)
 
 @bot.message_handler(commands=['settings'])
 def settings_command(message):
+    """Показать главное меню настроек"""
+    user = message.from_user
+    log_and_print(f"Пользователь {user.username} (ID: {user.id}) открыл настройки")
+    
+    # Проверяем существование настроек пользователя
+    if user.id not in user_settings:
+        user_settings[user.id] = {
+            "video_size": 384,
+            "video_quality": "medium"
+        }
+        log_and_print(f"Созданы настройки по умолчанию для пользователя {user.username} (ID: {user.id})")
+    
     markup = types.InlineKeyboardMarkup(row_width=1)
     
     # Кнопки для размера
@@ -96,136 +308,37 @@ def settings_command(message):
     
     markup.add(sizes_btn, quality_btn)
     
-    current_size = user_settings[message.from_user.id]["video_size"]
-    current_quality = user_settings[message.from_user.id]["video_quality"]
+    current_size = user_settings[user.id]["video_size"]
+    current_quality = user_settings[user.id]["video_quality"]
+    
+    # Получаем текстовое описание качества
+    quality_text = {
+        'high': 'высокое',
+        'medium': 'среднее',
+        'low': 'низкое'
+    }.get(current_quality, 'среднее')
     
     bot.send_message(
         message.chat.id,
         f"⚙️ Настройки обработки видео\n\n"
         f"Текущие настройки:\n"
         f"📐 Размер: {current_size}x{current_size}\n"
-        f"🎨 Качество: {current_quality}\n\n"
+        f"🎨 Качество: {quality_text}\n\n"
         f"Выберите параметр для настройки:",
         reply_markup=markup
     )
-
-@bot.callback_query_handler(func=lambda call: call.data == "show_sizes")
-def show_sizes(call):
-    markup = types.InlineKeyboardMarkup()
-    sizes = [
-        (384, "384x384 (компактный)"), 
-        (480, "480x480 (оптимальный)"),
-        (640, "640x640 (максимальный)")
-    ]
     
-    for size, text in sizes:
-        callback_data = f"size_{size}"
-        btn = types.InlineKeyboardButton(text=text, callback_data=callback_data)
-        markup.add(btn)
-    
-    back_btn = types.InlineKeyboardButton("↩️ Назад", callback_data="back_to_settings")
-    markup.add(back_btn)
-    
-    current_size = user_settings[call.from_user.id]["video_size"]
-    bot.edit_message_text(
-        f"🎯 Настройка размера видеозаметки\n\n"
-        f"Текущий размер: {current_size}x{current_size}\n\n"
-        f"Выберите желаемый размер кружка:\n"
-        f"• Чем больше размер, тем лучше качество\n"
-        f"• Чем меньше размер, тем быстрее обработка",
-        call.message.chat.id,
-        call.message.message_id,
-        reply_markup=markup
+    log_and_print(
+        f"Текущие настройки пользователя {user.username} (ID: {user.id}):\n"
+        f"- Размер: {current_size}x{current_size}\n"
+        f"- Качество: {quality_text}"
     )
-
-@bot.callback_query_handler(func=lambda call: call.data == "show_quality")
-def show_quality(call):
-    markup = types.InlineKeyboardMarkup()
-    qualities = [
-        ("high", "🎯 Высокое (большой размер)"),
-        ("medium", "✨ Среднее (рекомендуется)"),
-        ("low", "🚀 Низкое (маленький размер)")
-    ]
-    
-    for quality, text in qualities:
-        callback_data = f"quality_{quality}"
-        btn = types.InlineKeyboardButton(text=text, callback_data=callback_data)
-        markup.add(btn)
-    
-    back_btn = types.InlineKeyboardButton("↩️ Назад", callback_data="back_to_settings")
-    markup.add(back_btn)
-    
-    current_quality = user_settings[call.from_user.id]["video_quality"]
-    bot.edit_message_text(
-        f"🎨 Настройка качества видео\n\n"
-        f"Текущее качество: {current_quality}\n\n"
-        f"Выберите желаемое качество:\n"
-        f"• Высокое - лучшее качество, большой размер\n"
-        f"• Среднее - оптимальный баланс\n"
-        f"• Низкое - быстрая обработка, малый размер",
-        call.message.chat.id,
-        call.message.message_id,
-        reply_markup=markup
-    )
-
-@bot.callback_query_handler(func=lambda call: call.data.startswith('size_'))
-def handle_size_selection(call):
-    size = int(call.data.split('_')[1])
-    user_settings[call.from_user.id]["video_size"] = size
-    bot.answer_callback_query(
-        call.id,
-        f"✅ Установлен размер {size}x{size} для выходной видеозаметки",
-        show_alert=True
-    )
-    bot.edit_message_text(
-        f"✅ Новый размер видеозаметки: {size}x{size}\n\n"
-        "Теперь отправьте мне видео, и я создам из него кружок с выбранным размером.",
-        call.message.chat.id,
-        call.message.message_id
-    )
-    logger.info(f"Пользователь {call.from_user.username} (ID: {call.from_user.id}) изменил размер выходной видеозаметки на {size}")
-
-@bot.callback_query_handler(func=lambda call: call.data.startswith('quality_'))
-def handle_quality_selection(call):
-    quality = call.data.split('_')[1]
-    user_settings[call.from_user.id]["video_quality"] = quality
-    bot.answer_callback_query(
-        call.id,
-        f"✅ Установлено качество: {quality}",
-        show_alert=True
-    )
-    settings_command(call.message)
-
-@bot.callback_query_handler(func=lambda call: call.data == "back_to_settings")
-def back_to_settings(call):
-    settings_command(call.message)
-
-@bot.message_handler(commands=['stats'])
-def stats_command(message):
-    stats_text = get_user_stats(message.from_user.id)
-    bot.reply_to(message, stats_text)
-
-def help_markup():
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn1 = types.KeyboardButton('❓ Помощь')
-    btn2 = types.KeyboardButton('⚙️ Настройки')
-    btn3 = types.KeyboardButton('📊 Статистика')
-    markup.add(btn1, btn2, btn3)
-    return markup
-
-def help_message(message):
-    bot.send_message(message.chat.id, 'Необходимо прислать видео, бот обработает его и пришлет вам кружок.\n'
-                                      '1. Если длительность больше 60 секунд, бот его обрежет\n'
-                                      '2. Видео весит не более 12 МБ\n'
-                                      '3. Если видео больше 640x640 пикселей, бот его обрежет\n'
-                                      '4. Видео должно быть отправлено как видео, а не документ\n\n'
-                                      'Доступные команды:\n'
-                                      '⚙️ Настройки - изменить размер кружка\n'
-                                      '📊 Статистика - посмотреть вашу статистику\n'
-                                      '❓ Помощь - показать это сообщение')
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
+    user = message.from_user
+    log_and_print(f"Пользователь {user.username} (ID: {user.id}) запустил бота")
+    
     bot.send_message(
         message.chat.id,
         'Привет! Я помогу превратить твое видео в видеозаметку (кружок).\n\n'
@@ -237,175 +350,388 @@ def start_message(message):
         reply_markup=help_markup()
     )
 
+def help_markup():
+    """Создание клавиатуры с кнопками меню"""
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton('❓ Помощь')
+    btn2 = types.KeyboardButton('⚙️ Настройки')
+    btn3 = types.KeyboardButton('📊 Статистика')
+    markup.add(btn1, btn2, btn3)
+    log_and_print("Создана клавиатура с основными кнопками меню")
+    return markup
+
 @bot.message_handler(commands=['help'])
 def help_command(message):
+    """Обработчик команды /help"""
+    user = message.from_user
+    log_and_print(f"Пользователь {user.username} (ID: {user.id}) вызвал команду /help")
     help_message(message)
+
+def help_message(message):
+    """Отображение справочной информации"""
+    user = message.from_user
+    log_and_print(f"Пользователь {user.username} (ID: {user.id}) запросил справку")
+    
+    help_text = ('Необходимо прислать видео, бот обработает его и пришлет вам кружок.\n'
+                '1. Если длительность больше 60 секунд, бот его обрежет\n'
+                '2. Видео весит не более 12 МБ\n'
+                '3. Если видео больше 640x640 пикселей, бот его обрежет\n'
+                '4. Видео должно быть отправлено как видео, а не документ\n\n'
+                'Доступные команды:\n'
+                '⚙️ Настройки - изменить размер кружка\n'
+                '📊 Статистика - посмотреть вашу статистику\n'
+                '❓ Помощь - показать это сообщение')
+    
+    bot.send_message(message.chat.id, help_text)
+    log_and_print(f"Отправлена справочная информация пользователю {user.username} (ID: {user.id})")
 
 @bot.message_handler(content_types=['text'])
 def analyze_text(message):
+    """Обработка текстовых сообщений"""
+    user = message.from_user
     text = message.text.lower()
+    
+    log_and_print(f"Получено текстовое сообщение от пользователя {user.username} (ID: {user.id}): {text}")
+    
     if 'помощь' in text:
+        log_and_print(f"Пользователь {user.username} (ID: {user.id}) запросил помощь через текстовое меню")
         help_message(message)
     elif 'настройки' in text:
+        log_and_print(f"Пользователь {user.username} (ID: {user.id}) открыл настройки через текстовое меню")
         settings_command(message)
     elif 'статистика' in text:
+        log_and_print(f"Пользователь {user.username} (ID: {user.id}) запросил статистику через текстовое меню")
         stats_command(message)
+    else:
+        log_and_print(f"Получено неизвестное текстовое сообщение от пользователя {user.username} (ID: {user.id}): {text}")
+        help_message(message)  # Показываем справку при неизвестной команде
+
+@bot.message_handler(commands=['start'])
+def start_message(message):
+    """Обработчик команды /start"""
+    user = message.from_user
+    log_and_print(f"Пользователь {user.username} (ID: {user.id}) запустил бота")
+    
+    welcome_text = ('Привет! Я помогу превратить твое видео в видеозаметку (кружок).\n\n'
+                   'Используй кнопки меню:\n'
+                   '⚙️ Настройки - изменить размер кружка\n'
+                   '📊 Статистика - посмотреть вашу статистику\n'
+                   '❓ Помощь - показать справку\n\n'
+                   'Или просто отправь мне видео!')
+    
+    bot.send_message(
+        message.chat.id,
+        welcome_text,
+        reply_markup=help_markup()
+    )
+    log_and_print(f"Отправлено приветственное сообщение пользователю {user.username} (ID: {user.id})")
+
+def resize_frame_with_padding(frame, target_size):
+    """Изменение размера кадра с сохранением пропорций и добавлением отступов"""
+    height, width = frame.shape[:2]
+    
+    # Определяем размер стороны для масштабирования
+    scale = min(target_size / width, target_size / height)
+    new_width = int(width * scale)
+    new_height = int(height * scale)
+    
+    # Изменяем размер с сохранением пропорций
+    resized = cv2.resize(frame, (new_width, new_height), interpolation=cv2.INTER_LANCZOS4)
+    
+    # Создаем черный квадратный кадр нужного размера
+    square = np.zeros((target_size, target_size, 3), dtype=np.uint8)
+    
+    # Вычисляем отступы для центрирования
+    x_offset = (target_size - new_width) // 2
+    y_offset = (target_size - new_height) // 2
+    
+    # Вставляем изображение по центру
+    square[y_offset:y_offset + new_height, x_offset:x_offset + new_width] = resized
+    
+    return square
 
 def fast_resize_video(input_path, output_path, target_size, quality='medium'):
     """Быстрое изменение размера видео с использованием OpenCV"""
-    cap = cv2.VideoCapture(input_path)
-    
-    # Получаем параметры видео
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps = int(cap.get(cv2.CAP_PROP_FPS))
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    
-    print(f"Параметры исходного видео:")
-    print(f"- Ширина: {width}px")
-    print(f"- Высота: {height}px")
-    print(f"- FPS: {fps}")
-    print(f"- Количество кадров: {frame_count}")
-    
-    # Для видеозаметки нужен квадратный размер
-    target_size = min(target_size, 640)  # Максимальный размер для видеозаметки
-    new_size = target_size
-    
-    print(f"Создаем квадратное видео {new_size}x{new_size}")
-    
-    # Настройки качества кодирования
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    
-    # Создаем временный файл для первичной обработки
-    temp_output = tempfile.NamedTemporaryFile(suffix='.mp4', delete=False).name
-    
-    # Создаем видеописатель
-    out = cv2.VideoWriter(temp_output, fourcc, fps, (new_size, new_size))
-    
-    if not out.isOpened():
-        raise Exception("Не удалось создать выходной файл для видео")
-    
-    frames_processed = 0
-    progress_step = max(1, frame_count // 10)  # Обновляем прогресс каждые 10%
+    log_and_print("Начинаем обработку видео...")
     
     try:
+        # Открываем видео
+        cap = cv2.VideoCapture(input_path)
+        if not cap.isOpened():
+            raise Exception("Не удалось открыть видео файл")
+        
+        # Получаем параметры видео
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fps = int(cap.get(cv2.CAP_PROP_FPS))
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        
+        log_and_print(f"Параметры исходного видео: {width}x{height}, {fps} FPS, {total_frames} кадров")
+        
+        # Настраиваем качество видео
+        if quality == 'high':
+            bitrate = '2M'
+            crf = 18
+        elif quality == 'medium':
+            bitrate = '1M'
+            crf = 23
+        else:  # low
+            bitrate = '500k'
+            crf = 28
+            
+        # Создаем временный файл с помощью OpenCV
+        temp_output = tempfile.NamedTemporaryFile(suffix='.mp4', delete=False).name
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(temp_output, fourcc, fps, (target_size, target_size))
+        
+        if not out.isOpened():
+            raise Exception("Не удалось создать выходной файл")
+        
+        frames_processed = 0
+        start_time = time.time()
+        
         while True:
             ret, frame = cap.read()
             if not ret:
                 break
+                
+            # Изменяем размер кадра с сохранением пропорций
+            resized_frame = resize_frame_with_padding(frame, target_size)
+            out.write(resized_frame)
             
-            # Создаем квадратный кадр
-            h, w = frame.shape[:2]
-            size = min(h, w)
-            x = (w - size) // 2
-            y = (h - size) // 2
-            frame = frame[y:y+size, x:x+size]
-            
-            # Оптимизированное изменение размера
-            if size != new_size:
-                # Используем INTER_AREA для уменьшения и INTER_CUBIC для увеличения
-                interpolation = cv2.INTER_AREA if size > new_size else cv2.INTER_CUBIC
-                frame = cv2.resize(frame, (new_size, new_size), interpolation=interpolation)
-            
-            # Применяем настройки качества через постобработку
-            if quality == 'high':
-                # Минимальное сжатие для высокого качества
-                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 95]
-            elif quality == 'medium':
-                # Среднее сжатие
-                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 85]
-            else:  # low
-                # Максимальное сжатие
-                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 75]
-            
-            # Применяем сжатие к кадру
-            _, encoded_frame = cv2.imencode('.jpg', frame, encode_param)
-            frame = cv2.imdecode(encoded_frame, 1)
-            
-            out.write(frame)
             frames_processed += 1
-            
-            # Обновляем прогресс
-            if frames_processed % progress_step == 0:
-                progress = (frames_processed / frame_count) * 100
-                print(f"Прогресс обработки: {progress:.1f}%")
+            if frames_processed % 30 == 0:  # Логируем каждые 30 кадров
+                progress = (frames_processed / total_frames) * 100
+                elapsed_time = time.time() - start_time
+                fps_processing = frames_processed / elapsed_time
+                log_and_print(f"Обработано {frames_processed}/{total_frames} кадров ({progress:.1f}%), {fps_processing:.1f} FPS")
         
-        # Закрываем видеописатель
+        # Освобождаем ресурсы OpenCV
+        cap.release()
         out.release()
         
-        # Конвертируем видео в финальный формат с помощью ffmpeg
-        print("Выполняем финальную конвертацию...")
-        import subprocess
+        log_and_print(f"Обработка OpenCV завершена. Обработано {frames_processed} кадров за {time.time() - start_time:.1f} секунд")
         
-        # Настройки качества для ffmpeg
-        if quality == 'high':
-            crf = "18"  # Высокое качество
-        elif quality == 'medium':
-            crf = "23"  # Среднее качество
-        else:  # low
-            crf = "28"  # Низкое качество
+        # Конвертируем в H.264 с помощью ffmpeg для совместимости
+        log_and_print("Конвертируем видео в H.264...")
         
-        # Используем ffmpeg для финальной конвертации
-        command = [
-            'ffmpeg', '-i', temp_output,
+        ffmpeg_cmd = [
+            'ffmpeg',
+            '-i', temp_output,
             '-c:v', 'libx264',
             '-preset', 'medium',
-            '-crf', crf,
-            '-y',  # Перезаписывать существующий файл
+            '-crf', str(crf),
+            '-maxrate', bitrate,
+            '-bufsize', bitrate,
+            '-movflags', '+faststart',
+            '-y',
             output_path
         ]
         
-        subprocess.run(command, check=True, capture_output=True)
+        process = subprocess.Popen(
+            ffmpeg_cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
         
-        # Проверяем размер выходного файла
-        output_size = os.path.getsize(output_path) / (1024 * 1024)  # в МБ
-        print(f"Размер выходного файла: {output_size:.2f} МБ")
+        _, stderr = process.communicate()
         
-        return frames_processed
-        
-    finally:
-        cap.release()
-        out.release()
+        if process.returncode != 0:
+            raise Exception(f"Ошибка при конвертации видео: {stderr.decode()}")
+            
         # Удаляем временный файл
-        if os.path.exists(temp_output):
-            os.unlink(temp_output)
-
-def process_video(input_path, output_path, target_size=384, quality='medium'):
-    """Оптимизированная обработка видео для создания видеозаметки"""
-    try:
-        print(f"Начинаем обработку видео...")
-        print(f"Настройки: размер={target_size}x{target_size}, качество={quality}")
+        os.unlink(temp_output)
         
-        # Проверяем длительность видео
-        clip = mp.VideoFileClip(input_path)
-        duration = clip.duration
-        print(f"Длительность видео: {duration:.2f} секунд")
-        clip.close()
-
-        # Если видео длиннее 60 секунд, обрезаем его
-        temp_cut = None
-        if duration > 60:
-            print("Видео длиннее 60 секунд, обрезаем...")
-            temp_cut = tempfile.NamedTemporaryFile(suffix='.mp4', delete=False).name
-            ffmpeg_extract_subclip(input_path, 0, 60, targetname=temp_cut)
-            current_input = temp_cut
-            print("Обрезка видео завершена")
-        else:
-            current_input = input_path
-
-        # Изменяем размер видео с помощью OpenCV
-        print("Начинаем создание видеозаметки...")
-        frames_processed = fast_resize_video(current_input, output_path, target_size, quality)
-        print(f"Создание видеозаметки завершено. Обработано кадров: {frames_processed}")
-
-        # Удаляем временный файл если он был создан
-        if temp_cut:
-            os.unlink(temp_cut)
-            print("Временные файлы удалены")
-
+        if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+            raise Exception("Итоговый файл пуст или не существует")
+            
+        log_and_print(f"Видео успешно конвертировано в H.264")
+        return True
+        
     except Exception as e:
-        print(f"❌ Ошибка при обработке видео: {str(e)}")
-        raise Exception(f"Ошибка при обработке видео: {str(e)}")
+        log_and_print(f"Ошибка при обработке видео: {str(e)}", logging.ERROR)
+        # Освобождаем ресурсы в случае ошибки
+        if 'cap' in locals():
+            cap.release()
+        if 'out' in locals():
+            out.release()
+        if 'temp_output' in locals() and os.path.exists(temp_output):
+            try:
+                os.unlink(temp_output)
+            except:
+                pass
+        return False
+
+def process_video(message, input_file, output_file):
+    """Обработка видео с сохранением во временный файл"""
+    try:
+        user = message.from_user
+        log_and_print(f"Начинаем обработку видео от пользователя {user.username} (ID: {user.id})")
+        
+        # Получаем настройки пользователя
+        user_id = message.from_user.id
+        target_size = user_settings[user_id]["video_size"]
+        quality = user_settings[user_id]["video_quality"]
+        
+        # Обрабатываем видео
+        success = fast_resize_video(input_file, output_file, target_size, quality)
+        if not success:
+            raise Exception("Ошибка при обработке видео")
+            
+        log_and_print(f"Видео успешно обработано и сохранено: {output_file}")
+        return True
+        
+    except Exception as e:
+        error_message = f"Ошибка при обработке видео: {str(e)}"
+        log_and_print(error_message, logging.ERROR)
+        bot.reply_to(message, f"❌ {error_message}")
+        return False
+
+@bot.message_handler(content_types=['video'])
+def video(message):
+    try:
+        user = message.from_user
+        user_id = user.id
+        username = user.username or "Unknown"
+        
+        # Проверка на флуд
+        if check_flood(user_id):
+            log_and_print(f"Обнаружен флуд от пользователя {username} (ID: {user_id})", logging.WARNING)
+            bot.reply_to(message, "Пожалуйста, подождите минуту перед отправкой следующего видео.")
+            return
+
+        # Проверяем размер файла
+        file_size_mb = message.video.file_size / (1024 * 1024)
+        if file_size_mb > 12:
+            log_and_print(f"Файл слишком большой: {file_size_mb:.2f} МБ", logging.WARNING)
+            bot.reply_to(message, "Видео слишком большое. Максимальный размер - 12 МБ")
+            return
+            
+        log_and_print(
+            f"Получено видео от пользователя {username} (ID: {user_id})\n"
+            f"Размер файла: {file_size_mb:.2f} МБ"
+        )
+
+        # Получаем настройки пользователя
+        target_size = user_settings[user_id]["video_size"]
+        quality = user_settings[user_id]["video_quality"]
+        
+        log_and_print(f"Настройки пользователя: размер={target_size}, качество={quality}")
+        
+        # Отправляем сообщение о начале обработки
+        quality_text = {
+            'high': 'высокое',
+            'medium': 'среднее',
+            'low': 'низкое'
+        }.get(quality, 'среднее')
+        
+        processing_msg = bot.reply_to(
+            message,
+            f"⚙️ Начинаю обработку видео\n\n"
+            f"📐 Размер кружка: {target_size}x{target_size}\n"
+            f"🎨 Качество: {quality_text}\n\n"
+            f"⏳ Пожалуйста, подождите..."
+        )
+        
+        # Создаем временные файлы
+        with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as input_file, \
+             tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as output_file:
+            
+            try:
+                # Скачиваем видео
+                log_and_print("Скачиваем видео...")
+                file_info = bot.get_file(message.video.file_id)
+                downloaded_file = bot.download_file(file_info.file_path)
+                input_file.write(downloaded_file)
+                input_file.flush()
+                log_and_print("Видео успешно скачано")
+                
+                # Обновляем сообщение о процессе
+                bot.edit_message_text(
+                    f"⚙️ Обработка видео\n\n"
+                    f"📐 Размер кружка: {target_size}x{target_size}\n"
+                    f"🎨 Качество: {quality_text}\n\n"
+                    f"📥 Видео загружено\n"
+                    f"🔄 Конвертация...",
+                    chat_id=processing_msg.chat.id,
+                    message_id=processing_msg.message_id
+                )
+                
+                # Обрабатываем видео
+                log_and_print("Запускаем обработку видео...")
+                success = process_video(message, input_file.name, output_file.name)
+                
+                if not success:
+                    raise Exception("Ошибка при обработке видео")
+                
+                # Проверяем результат
+                if not os.path.exists(output_file.name) or os.path.getsize(output_file.name) == 0:
+                    raise Exception("Результирующий файл пуст или не существует")
+                
+                # Обновляем сообщение о процессе
+                bot.edit_message_text(
+                    f"⚙️ Обработка видео\n\n"
+                    f"📐 Размер кружка: {target_size}x{target_size}\n"
+                    f"🎨 Качество: {quality_text}\n\n"
+                    f"📥 Видео загружено\n"
+                    f"✅ Конвертация завершена\n"
+                    f"📤 Отправка...",
+                    chat_id=processing_msg.chat.id,
+                    message_id=processing_msg.message_id
+                )
+                
+                # Отправляем результат
+                log_and_print("Отправляем обработанное видео пользователю...")
+                with open(output_file.name, 'rb') as video:
+                    bot.send_video_note(message.chat.id, video)
+                log_and_print("Видео успешно отправлено")
+                
+                # Обновляем статистику
+                if user_id not in user_stats:
+                    user_stats[user_id] = {"processed_videos": 0, "total_size_mb": 0}
+                user_stats[user_id]["processed_videos"] += 1
+                user_stats[user_id]["total_size_mb"] += file_size_mb
+                
+                # Финальное сообщение об успешной обработке
+                bot.edit_message_text(
+                    f"✅ Видео успешно обработано\n\n"
+                    f"📐 Размер кружка: {target_size}x{target_size}\n"
+                    f"🎨 Качество: {quality_text}\n\n"
+                    f"📊 Ваша статистика:\n"
+                    f"🎥 Обработано видео: {user_stats[user_id]['processed_videos']}\n"
+                    f"💾 Общий размер: {user_stats[user_id]['total_size_mb']:.1f} МБ",
+                    chat_id=processing_msg.chat.id,
+                    message_id=processing_msg.message_id
+                )
+                
+            except Exception as e:
+                error_message = f"Ошибка при обработке видео: {str(e)}"
+                log_and_print(error_message, logging.ERROR)
+                
+                # Обновляем сообщение об ошибке
+                try:
+                    bot.edit_message_text(
+                        f"❌ Ошибка при обработке видео\n\n"
+                        f"Причина: {str(e)}",
+                        chat_id=processing_msg.chat.id,
+                        message_id=processing_msg.message_id
+                    )
+                except:
+                    bot.reply_to(message, f"❌ {error_message}")
+            
+            finally:
+                # Удаляем временные файлы
+                try:
+                    os.unlink(input_file.name)
+                    os.unlink(output_file.name)
+                    cleanup_temp_files()
+                except Exception as e:
+                    log_and_print(f"Ошибка при удалении временных файлов: {str(e)}", logging.ERROR)
+    
+    except Exception as e:
+        error_message = f"Ошибка при обработке видео: {str(e)}"
+        log_and_print(error_message, logging.ERROR)
+        bot.reply_to(message, f"❌ {error_message}")
 
 def cleanup_temp_files():
     """Очистка всех временных файлов"""
@@ -415,9 +741,9 @@ def cleanup_temp_files():
         for temp_file in temp_files:
             try:
                 os.remove(temp_file)
-                print(f"Удален временный файл: {temp_file}")
+                log_and_print(f"Удален временный файл: {temp_file}")
             except Exception as e:
-                print(f"Ошибка при удалении {temp_file}: {str(e)}")
+                log_and_print(f"Ошибка при удалении {temp_file}: {str(e)}")
         
         # Удаляем файлы с определенными паттернами
         patterns = ["*_resized.mp4", "sigma_video.mp4"]
@@ -426,102 +752,11 @@ def cleanup_temp_files():
             for file in files:
                 try:
                     os.remove(file)
-                    print(f"Удален файл: {file}")
+                    log_and_print(f"Удален файл: {file}")
                 except Exception as e:
-                    print(f"Ошибка при удалении {file}: {str(e)}")
+                    log_and_print(f"Ошибка при удалении {file}: {str(e)}")
     except Exception as e:
-        print(f"Ошибка при очистке временных файлов: {str(e)}")
-
-@bot.message_handler(content_types=['video'])
-def video(message):
-    try:
-        user_id = message.from_user.id
-        username = message.from_user.username or "Unknown"
-        
-        # Проверка на флуд
-        if check_flood(user_id):
-            logger.warning(f"Обнаружен флуд от пользователя {username} (ID: {user_id})")
-            bot.reply_to(message, "Пожалуйста, подождите минуту перед отправкой следующего видео.")
-            return
-
-        file_size_mb = message.video.file_size / (1024 * 1024)
-        logger.info(f"Получено видео от пользователя {username} (ID: {user_id}), размер: {file_size_mb:.2f} МБ")
-        print(f"\nПолучено новое видео от пользователя {username} (ID: {user_id})")
-        print(f"Размер файла: {file_size_mb:.2f} МБ")
-
-        # Обновляем статистику
-        user_stats[user_id]["processed_videos"] += 1
-        user_stats[user_id]["total_size_mb"] += file_size_mb
-
-        # Проверка размера файла
-        if message.video.file_size > 12 * 1024 * 1024:  # 12 МБ
-            logger.warning(f"Попытка загрузки большого файла от пользователя {username} (ID: {user_id})")
-            print("❌ Видео слишком большое, отправляем сообщение об ошибке")
-            bot.reply_to(message, "Видео слишком большое. Максимальный размер - 12 МБ")
-            return
-
-        # Получаем настройки пользователя
-        target_size = user_settings[user_id]["video_size"]
-        quality = user_settings[user_id]["video_quality"]
-        
-        bot.send_message(
-            message.chat.id, 
-            f'⚙️ Начинаю обработку видео\n'
-            f'Выбранный размер кружка: {target_size}x{target_size}\n'
-            f'Качество: {quality}\n'
-            f'Пожалуйста, подождите...'
-        )
-        print("Начинаем обработку видео...")
-        logger.info(f"Начало обработки видео от пользователя {username} (ID: {user_id})")
-        
-        try:
-            # Создаем временные файлы
-            with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as input_file, \
-                 tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as output_file:
-                
-                # Скачиваем видео
-                print("Скачиваем видео...")
-                file_info = bot.get_file(message.video.file_id)
-                downloaded_file = bot.download_file(file_info.file_path)
-                input_file.write(downloaded_file)
-                input_file.flush()
-                print("Видео успешно скачано")
-                logger.info(f"Видео успешно скачано от пользователя {username}")
-                
-                # Обрабатываем видео в отдельном потоке
-                print("Запускаем обработку видео в отдельном потоке...")
-                future = executor.submit(process_video, input_file.name, output_file.name, target_size, quality)
-                future.result()
-                
-                # Отправляем результат
-                print("Отправляем обработанное видео пользователю...")
-                with open(output_file.name, 'rb') as result_file:
-                    bot.send_video_note(message.chat.id, result_file)
-                print("Видео успешно отправлено")
-                logger.info(f"Видео успешно обработано и отправлено пользователю {username}")
-        
-        finally:
-            # Удаляем временные файлы
-            try:
-                os.unlink(input_file.name)
-                os.unlink(output_file.name)
-                print("Временные файлы удалены")
-                # Очищаем все оставшиеся временные файлы
-                cleanup_temp_files()
-                print("Очистка временных файлов завершена")
-                logger.info(f"Временные файлы очищены для пользователя {username}")
-            except Exception as e:
-                error_msg = f"Ошибка при удалении файлов: {str(e)}"
-                print(error_msg)
-                logger.error(error_msg)
-            
-    except Exception as e:
-        error_message = str(e)
-        logger.error(f"Ошибка при обработке видео от пользователя {username}: {error_message}")
-        print(f"❌ Ошибка при обработке видео: {error_message}")
-        bot.send_message(message.chat.id, f'Произошла ошибка при обработке видео: {error_message}')
-        # Пытаемся очистить временные файлы даже в случае ошибки
-        cleanup_temp_files()
+        log_and_print(f"Ошибка при очистке временных файлов: {str(e)}", logging.ERROR)
 
 if __name__ == '__main__':
     try:
