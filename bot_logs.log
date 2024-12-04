@@ -1,0 +1,29 @@
+2024-12-03 23:53:30,544 - circle_bot - INFO - Бот успешно инициализирован
+2024-12-03 23:53:30,544 - circle_bot - INFO - Бот запущен
+2024-12-03 23:54:38,453 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) изменил размер видео на 640
+2024-12-03 23:55:21,198 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478), размер: 8.09 МБ
+2024-12-03 23:55:21,408 - circle_bot - INFO - Начало обработки видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-03 23:55:28,757 - circle_bot - INFO - Видео успешно скачано от пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-03 23:55:38,438 - circle_bot - INFO - Видео успешно обработано и отправлено пользователю Maltsev_Denis_Vyacheslavovich
+2024-12-03 23:55:38,445 - circle_bot - INFO - Временные файлы очищены для пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-03 23:58:05,759 - TeleBot - ERROR - Infinity polling: polling exited
+2024-12-03 23:58:05,760 - TeleBot - ERROR - Break infinity polling
+2024-12-03 23:58:08,989 - circle_bot - INFO - Бот успешно инициализирован
+2024-12-03 23:58:08,990 - circle_bot - INFO - Бот запущен
+2024-12-03 23:58:46,124 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) изменил размер выходной видеозаметки на 480
+2024-12-03 23:59:10,635 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478), размер: 8.09 МБ
+2024-12-03 23:59:11,428 - circle_bot - INFO - Начало обработки видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-03 23:59:31,343 - circle_bot - INFO - Видео успешно скачано от пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-03 23:59:34,752 - circle_bot - INFO - Видео успешно обработано и отправлено пользователю Maltsev_Denis_Vyacheslavovich
+2024-12-03 23:59:34,756 - circle_bot - INFO - Временные файлы очищены для пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-04 00:00:57,824 - TeleBot - ERROR - Infinity polling: polling exited
+2024-12-04 00:00:57,825 - TeleBot - ERROR - Break infinity polling
+2024-12-04 00:01:41,330 - circle_bot - INFO - Бот успешно инициализирован
+2024-12-04 00:01:41,331 - circle_bot - INFO - Бот запущен
+2024-12-04 00:02:36,073 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478), размер: 8.09 МБ
+2024-12-04 00:02:36,277 - circle_bot - INFO - Начало обработки видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 00:02:53,300 - circle_bot - INFO - Видео успешно скачано от пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-04 00:03:00,421 - circle_bot - INFO - Видео успешно обработано и отправлено пользователю Maltsev_Denis_Vyacheslavovich
+2024-12-04 00:03:00,423 - circle_bot - INFO - Временные файлы очищены для пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-04 00:38:21,636 - TeleBot - ERROR - Infinity polling: polling exited
+2024-12-04 00:38:21,636 - TeleBot - ERROR - Break infinity polling
