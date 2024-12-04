@@ -65,7 +65,10 @@ except Exception as e:
     sys.exit(1)
 
 # Настройки пользователей
-user_settings = defaultdict(lambda: {"video_size": 384})  # Размер видео по умолчанию
+user_settings = defaultdict(lambda: {
+    "video_size": 384,
+    "video_quality": "medium"  # новая настройка качества
+})
 user_stats = defaultdict(lambda: {"processed_videos": 0, "total_size_mb": 0})
 
 def get_user_stats(user_id):
@@ -77,6 +80,37 @@ def get_user_stats(user_id):
 
 @bot.message_handler(commands=['settings'])
 def settings_command(message):
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    
+    # Кнопки для размера
+    sizes_btn = types.InlineKeyboardButton(
+        "🎯 Размер видео", 
+        callback_data="show_sizes"
+    )
+    
+    # Кнопки для качества
+    quality_btn = types.InlineKeyboardButton(
+        "🎨 Качество видео", 
+        callback_data="show_quality"
+    )
+    
+    markup.add(sizes_btn, quality_btn)
+    
+    current_size = user_settings[message.from_user.id]["video_size"]
+    current_quality = user_settings[message.from_user.id]["video_quality"]
+    
+    bot.send_message(
+        message.chat.id,
+        f"⚙️ Настройки обработки видео\n\n"
+        f"Текущие настройки:\n"
+        f"📐 Размер: {current_size}x{current_size}\n"
+        f"🎨 Качество: {current_quality}\n\n"
+        f"Выберите параметр для настройки:",
+        reply_markup=markup
+    )
+
+@bot.callback_query_handler(func=lambda call: call.data == "show_sizes")
+def show_sizes(call):
     markup = types.InlineKeyboardMarkup()
     sizes = [
         (384, "384x384 (компактный)"), 
@@ -89,15 +123,48 @@ def settings_command(message):
         btn = types.InlineKeyboardButton(text=text, callback_data=callback_data)
         markup.add(btn)
     
-    current_size = user_settings[message.from_user.id]["video_size"]
-    bot.send_message(
-        message.chat.id,
-        f"⚙️ Настройки размера выходной видеозаметки (кружка)\n\n"
+    back_btn = types.InlineKeyboardButton("↩️ Назад", callback_data="back_to_settings")
+    markup.add(back_btn)
+    
+    current_size = user_settings[call.from_user.id]["video_size"]
+    bot.edit_message_text(
+        f"🎯 Настройка размера видеозаметки\n\n"
         f"Текущий размер: {current_size}x{current_size}\n\n"
-        "🎯 Выберите желаемый размер кружка:\n"
-        "• Чем больше размер, тем лучше качество\n"
-        "• Чем меньше размер, тем быстрее обработка\n"
-        "• Для большинства случаев подойдет оптимальный размер",
+        f"Выберите желаемый размер кружка:\n"
+        f"• Чем больше размер, тем лучше качество\n"
+        f"• Чем меньше размер, тем быстрее обработка",
+        call.message.chat.id,
+        call.message.message_id,
+        reply_markup=markup
+    )
+
+@bot.callback_query_handler(func=lambda call: call.data == "show_quality")
+def show_quality(call):
+    markup = types.InlineKeyboardMarkup()
+    qualities = [
+        ("high", "🎯 Высокое (большой размер)"),
+        ("medium", "✨ Среднее (рекомендуется)"),
+        ("low", "🚀 Низкое (маленький размер)")
+    ]
+    
+    for quality, text in qualities:
+        callback_data = f"quality_{quality}"
+        btn = types.InlineKeyboardButton(text=text, callback_data=callback_data)
+        markup.add(btn)
+    
+    back_btn = types.InlineKeyboardButton("↩️ Назад", callback_data="back_to_settings")
+    markup.add(back_btn)
+    
+    current_quality = user_settings[call.from_user.id]["video_quality"]
+    bot.edit_message_text(
+        f"🎨 Настройка качества видео\n\n"
+        f"Текущее качество: {current_quality}\n\n"
+        f"Выберите желаемое качество:\n"
+        f"• Высокое - лучшее качество, большой размер\n"
+        f"• Среднее - оптимальный баланс\n"
+        f"• Низкое - быстрая обработка, малый размер",
+        call.message.chat.id,
+        call.message.message_id,
         reply_markup=markup
     )
 
@@ -117,6 +184,21 @@ def handle_size_selection(call):
         call.message.message_id
     )
     logger.info(f"Пользователь {call.from_user.username} (ID: {call.from_user.id}) изменил размер выходной видеозаметки на {size}")
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('quality_'))
+def handle_quality_selection(call):
+    quality = call.data.split('_')[1]
+    user_settings[call.from_user.id]["video_quality"] = quality
+    bot.answer_callback_query(
+        call.id,
+        f"✅ Установлено качество: {quality}",
+        show_alert=True
+    )
+    settings_command(call.message)
+
+@bot.callback_query_handler(func=lambda call: call.data == "back_to_settings")
+def back_to_settings(call):
+    settings_command(call.message)
 
 @bot.message_handler(commands=['stats'])
 def stats_command(message):
@@ -169,7 +251,7 @@ def analyze_text(message):
     elif 'статистика' in text:
         stats_command(message)
 
-def fast_resize_video(input_path, output_path, target_size):
+def fast_resize_video(input_path, output_path, target_size, quality='medium'):
     """Быстрое изменение размера видео с использованием OpenCV"""
     cap = cv2.VideoCapture(input_path)
     
@@ -191,43 +273,109 @@ def fast_resize_video(input_path, output_path, target_size):
     
     print(f"Создаем квадратное видео {new_size}x{new_size}")
     
-    # Создаем видеописатель
+    # Настройки качества кодирования
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(output_path, fourcc, fps, (new_size, new_size))
+    
+    # Создаем временный файл для первичной обработки
+    temp_output = tempfile.NamedTemporaryFile(suffix='.mp4', delete=False).name
+    
+    # Создаем видеописатель
+    out = cv2.VideoWriter(temp_output, fourcc, fps, (new_size, new_size))
+    
+    if not out.isOpened():
+        raise Exception("Не удалось создать выходной файл для видео")
     
     frames_processed = 0
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        
-        # Создаем квадратный кадр
-        h, w = frame.shape[:2]
-        # Определяем размер меньшей стороны
-        size = min(h, w)
-        # Вычисляем координаты для обрезки по центру
-        x = (w - size) // 2
-        y = (h - size) // 2
-        # Обрезаем кадр до квадрата
-        frame = frame[y:y+size, x:x+size]
-        
-        # Изменяем размер до целевого
-        if size != new_size:
-            frame = cv2.resize(frame, (new_size, new_size), interpolation=cv2.INTER_AREA)
-            
-        out.write(frame)
-        frames_processed += 1
-        if frames_processed % 100 == 0:
-            print(f"Обработано кадров: {frames_processed}/{frame_count}")
+    progress_step = max(1, frame_count // 10)  # Обновляем прогресс каждые 10%
     
-    print(f"Обработка видео завершена. Всего обработано кадров: {frames_processed}")
-    cap.release()
-    out.release()
+    try:
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            
+            # Создаем квадратный кадр
+            h, w = frame.shape[:2]
+            size = min(h, w)
+            x = (w - size) // 2
+            y = (h - size) // 2
+            frame = frame[y:y+size, x:x+size]
+            
+            # Оптимизированное изменение размера
+            if size != new_size:
+                # Используем INTER_AREA для уменьшения и INTER_CUBIC для увеличения
+                interpolation = cv2.INTER_AREA if size > new_size else cv2.INTER_CUBIC
+                frame = cv2.resize(frame, (new_size, new_size), interpolation=interpolation)
+            
+            # Применяем настройки качества через постобработку
+            if quality == 'high':
+                # Минимальное сжатие для высокого качества
+                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 95]
+            elif quality == 'medium':
+                # Среднее сжатие
+                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 85]
+            else:  # low
+                # Максимальное сжатие
+                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 75]
+            
+            # Применяем сжатие к кадру
+            _, encoded_frame = cv2.imencode('.jpg', frame, encode_param)
+            frame = cv2.imdecode(encoded_frame, 1)
+            
+            out.write(frame)
+            frames_processed += 1
+            
+            # Обновляем прогресс
+            if frames_processed % progress_step == 0:
+                progress = (frames_processed / frame_count) * 100
+                print(f"Прогресс обработки: {progress:.1f}%")
+        
+        # Закрываем видеописатель
+        out.release()
+        
+        # Конвертируем видео в финальный формат с помощью ffmpeg
+        print("Выполняем финальную конвертацию...")
+        import subprocess
+        
+        # Настройки качества для ffmpeg
+        if quality == 'high':
+            crf = "18"  # Высокое качество
+        elif quality == 'medium':
+            crf = "23"  # Среднее качество
+        else:  # low
+            crf = "28"  # Низкое качество
+        
+        # Используем ffmpeg для финальной конвертации
+        command = [
+            'ffmpeg', '-i', temp_output,
+            '-c:v', 'libx264',
+            '-preset', 'medium',
+            '-crf', crf,
+            '-y',  # Перезаписывать существующий файл
+            output_path
+        ]
+        
+        subprocess.run(command, check=True, capture_output=True)
+        
+        # Проверяем размер выходного файла
+        output_size = os.path.getsize(output_path) / (1024 * 1024)  # в МБ
+        print(f"Размер выходного файла: {output_size:.2f} МБ")
+        
+        return frames_processed
+        
+    finally:
+        cap.release()
+        out.release()
+        # Удаляем временный файл
+        if os.path.exists(temp_output):
+            os.unlink(temp_output)
 
-def process_video(input_path, output_path, target_size=384):
+def process_video(input_path, output_path, target_size=384, quality='medium'):
     """Оптимизированная обработка видео для создания видеозаметки"""
     try:
         print(f"Начинаем обработку видео...")
+        print(f"Настройки: размер={target_size}x{target_size}, качество={quality}")
+        
         # Проверяем длительность видео
         clip = mp.VideoFileClip(input_path)
         duration = clip.duration
@@ -247,8 +395,8 @@ def process_video(input_path, output_path, target_size=384):
 
         # Изменяем размер видео с помощью OpenCV
         print("Начинаем создание видеозаметки...")
-        fast_resize_video(current_input, output_path, target_size)
-        print("Создание видеозаметки завершено")
+        frames_processed = fast_resize_video(current_input, output_path, target_size, quality)
+        print(f"Создание видеозаметки завершено. Обработано кадров: {frames_processed}")
 
         # Удаляем временный файл если он был создан
         if temp_cut:
@@ -314,11 +462,13 @@ def video(message):
 
         # Получаем настройки пользователя
         target_size = user_settings[user_id]["video_size"]
+        quality = user_settings[user_id]["video_quality"]
         
         bot.send_message(
             message.chat.id, 
             f'⚙️ Начинаю обработку видео\n'
             f'Выбранный размер кружка: {target_size}x{target_size}\n'
+            f'Качество: {quality}\n'
             f'Пожалуйста, подождите...'
         )
         print("Начинаем обработку видео...")
@@ -340,7 +490,7 @@ def video(message):
                 
                 # Обрабатываем видео в отдельном потоке
                 print("Запускаем обработку видео в отдельном потоке...")
-                future = executor.submit(process_video, input_file.name, output_file.name, target_size)
+                future = executor.submit(process_video, input_file.name, output_file.name, target_size, quality)
                 future.result()
                 
                 # Отправляем результат

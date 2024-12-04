@@ -27,3 +27,39 @@
 2024-12-04 00:03:00,423 - circle_bot - INFO - Временные файлы очищены для пользователя Maltsev_Denis_Vyacheslavovich
 2024-12-04 00:38:21,636 - TeleBot - ERROR - Infinity polling: polling exited
 2024-12-04 00:38:21,636 - TeleBot - ERROR - Break infinity polling
+2024-12-04 01:05:38,922 - circle_bot - INFO - Бот успешно инициализирован
+2024-12-04 01:05:38,922 - circle_bot - INFO - Бот запущен
+2024-12-04 01:06:12,371 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478), размер: 8.09 МБ
+2024-12-04 01:06:13,070 - circle_bot - INFO - Начало обработки видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 01:06:27,082 - circle_bot - INFO - Видео успешно скачано от пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-04 01:06:33,814 - circle_bot - INFO - Видео успешно обработано и отправлено пользователю Maltsev_Denis_Vyacheslavovich
+2024-12-04 01:06:33,816 - circle_bot - INFO - Временные файлы очищены для пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-04 01:10:01,879 - TeleBot - ERROR - Infinity polling: polling exited
+2024-12-04 01:10:01,879 - TeleBot - ERROR - Break infinity polling
+2024-12-04 01:17:10,220 - circle_bot - INFO - Бот успешно инициализирован
+2024-12-04 01:17:10,220 - circle_bot - INFO - Бот запущен
+2024-12-04 01:17:46,300 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478), размер: 8.09 МБ
+2024-12-04 01:17:46,494 - circle_bot - INFO - Начало обработки видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 01:18:00,874 - circle_bot - INFO - Видео успешно скачано от пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-04 01:18:02,332 - circle_bot - INFO - Временные файлы очищены для пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-04 01:18:02,335 - circle_bot - ERROR - Ошибка при обработке видео от пользователя Maltsev_Denis_Vyacheslavovich: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: file must be non-empty
+2024-12-04 01:19:42,654 - TeleBot - ERROR - Infinity polling: polling exited
+2024-12-04 01:19:42,654 - TeleBot - ERROR - Break infinity polling
+2024-12-04 01:22:15,692 - circle_bot - INFO - Бот успешно инициализирован
+2024-12-04 01:22:15,693 - circle_bot - INFO - Бот запущен
+2024-12-04 01:23:00,236 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478), размер: 8.09 МБ
+2024-12-04 01:23:00,958 - circle_bot - INFO - Начало обработки видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 01:23:18,507 - circle_bot - INFO - Видео успешно скачано от пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-04 01:23:25,808 - circle_bot - INFO - Видео успешно обработано и отправлено пользователю Maltsev_Denis_Vyacheslavovich
+2024-12-04 01:23:25,810 - circle_bot - INFO - Временные файлы очищены для пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-04 01:24:08,523 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478), размер: 8.09 МБ
+2024-12-04 01:24:08,713 - circle_bot - INFO - Начало обработки видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 01:24:25,536 - circle_bot - INFO - Видео успешно скачано от пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-04 01:24:29,001 - circle_bot - INFO - Видео успешно обработано и отправлено пользователю Maltsev_Denis_Vyacheslavovich
+2024-12-04 01:24:29,007 - circle_bot - INFO - Временные файлы очищены для пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-04 01:24:49,995 - circle_bot - INFO - Пользователь Maltsev_Denis_Vyacheslavovich (ID: 1667948478) изменил размер выходной видеозаметки на 640
+2024-12-04 01:25:11,964 - circle_bot - INFO - Получено видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478), размер: 8.09 МБ
+2024-12-04 01:25:12,161 - circle_bot - INFO - Начало обработки видео от пользователя Maltsev_Denis_Vyacheslavovich (ID: 1667948478)
+2024-12-04 01:25:19,057 - circle_bot - INFO - Видео успешно скачано от пользователя Maltsev_Denis_Vyacheslavovich
+2024-12-04 01:25:27,347 - circle_bot - INFO - Видео успешно обработано и отправлено пользователю Maltsev_Denis_Vyacheslavovich
+2024-12-04 01:25:27,349 - circle_bot - INFO - Временные файлы очищены для пользователя Maltsev_Denis_Vyacheslavovich
