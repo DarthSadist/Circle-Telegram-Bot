@@ -1,21 +1,18 @@
 import telebot
 import os
 from dotenv import load_dotenv
-import moviepy.editor as mp
+from moviepy.editor import VideoFileClip
 from telebot import types
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
-import cv2
-import numpy as np
-from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
-import glob
-import sys
 import time
 import logging
-from collections import defaultdict
-from datetime import datetime
-import subprocess
 import shutil
+import cv2
+import numpy as np
+from datetime import datetime, timedelta
+from collections import defaultdict
+from logging.handlers import RotatingFileHandler
 
 # Настройка логирования
 logging.basicConfig(
@@ -31,6 +28,20 @@ console_handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
+
+# Максимальный размер лог-файла (5 МБ)
+MAX_LOG_SIZE = 5 * 1024 * 1024
+# Максимальное количество файлов логов
+MAX_LOG_FILES = 3
+
+# Настройка логирования с ротацией
+handler = RotatingFileHandler(
+    'bot_logs.log',
+    maxBytes=MAX_LOG_SIZE,
+    backupCount=MAX_LOG_FILES
+)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 def log_and_print(message, level=logging.INFO):
     """Функция для логирования и вывода в консоль"""
@@ -74,15 +85,24 @@ FLOOD_TIME = 60  # временной интервал в секундах
 user_messages = defaultdict(list)  # словарь для хранения времени сообщений пользователей
 
 def check_flood(user_id):
-    """Проверка на флуд"""
+    """Проверка на флуд
+    Возвращает True если сообщение можно обработать, False если обнаружен флуд"""
     current_time = time.time()
+    
+    if user_id not in user_messages:
+        user_messages[user_id] = []
+    
     # Удаляем устаревшие сообщения
     user_messages[user_id] = [msg_time for msg_time in user_messages[user_id] 
                             if current_time - msg_time < FLOOD_TIME]
+    
+    # Проверяем количество сообщений
+    if len(user_messages[user_id]) >= FLOOD_LIMIT:
+        return False
+    
     # Добавляем новое сообщение
     user_messages[user_id].append(current_time)
-    # Проверяем количество сообщений
-    return len(user_messages[user_id]) > FLOOD_LIMIT
+    return True
 
 try:
     bot = telebot.TeleBot(TOKEN)
@@ -92,6 +112,25 @@ except Exception as e:
     logger.error(f"Ошибка при инициализации бота: {str(e)}")
     print(f"❌ Ошибка при инициализации бота: {str(e)}")
     sys.exit(1)
+
+# Настройки видео
+DEFAULT_SETTINGS = {
+    "video_size": 640,  # размер видео по умолчанию
+    "video_quality": "medium"  # качество по умолчанию
+}
+
+QUALITY_SETTINGS = {
+    'high': {'bitrate': '2000k', 'preset': 'medium'},
+    'medium': {'bitrate': '1000k', 'preset': 'faster'},
+    'low': {'bitrate': '500k', 'preset': 'veryfast'}
+}
+
+# Хранение настроек пользователей
+user_settings = defaultdict(lambda: DEFAULT_SETTINGS.copy())
+
+def get_user_settings(user_id):
+    """Получение настроек пользователя"""
+    return user_settings[user_id]
 
 # Константы для сообщений об ошибках
 ERROR_MESSAGES = {
@@ -104,54 +143,47 @@ ERROR_MESSAGES = {
     'conversion_error': "Ошибка при конвертации видео",
 }
 
-# Константы для настроек
-DEFAULT_SETTINGS = {
-    "video_size": 384,
-    "video_quality": "medium"
-}
-
-QUALITY_SETTINGS = {
-    'high': {'bitrate': '2M', 'preset': 'medium'},
-    'medium': {'bitrate': '1M', 'preset': 'faster'},
-    'low': {'bitrate': '500k', 'preset': 'veryfast'}
-}
+# Константы для обработки видео
+MAX_VIDEO_SIZE_MB = 12
+MAX_VIDEO_DURATION = 60  # максимальная длительность в секундах
+ALLOWED_VIDEO_FORMATS = ['.mp4', '.avi', '.mov', '.mkv']
 
 # Утилиты для обработки ошибок Telegram API
-def safe_edit_message(bot, message_id, chat_id, text, reply_markup=None):
+def safe_reply_to(message, text):
+    """Безопасный ответ на сообщение с обработкой ошибок"""
+    try:
+        return bot.reply_to(message, text)
+    except Exception as e:
+        log_and_print(f"Ошибка при ответе на сообщение: {str(e)}", level=logging.ERROR)
+        return None
+
+def safe_send_message(chat_id, text, reply_markup=None):
+    """Безопасная отправка сообщения с обработкой ошибок"""
+    try:
+        return bot.send_message(chat_id, text, reply_markup=reply_markup)
+    except Exception as e:
+        log_and_print(f"Ошибка при отправке сообщения: {str(e)}", level=logging.ERROR)
+        return None
+
+def safe_edit_message(chat_id, message_id, text, reply_markup=None):
     """Безопасное редактирование сообщения с обработкой ошибок"""
     try:
-        bot.edit_message_text(
+        return bot.edit_message_text(
             text,
             chat_id=chat_id,
             message_id=message_id,
             reply_markup=reply_markup
         )
-    except telebot.apihelper.ApiTelegramException as e:
-        if "message is not modified" not in str(e):
-            log_and_print(f"Ошибка при редактировании сообщения: {str(e)}", logging.WARNING)
-
-def safe_send_message(bot, chat_id, text, reply_markup=None):
-    """Безопасная отправка сообщения с обработкой ошибок"""
-    try:
-        return bot.send_message(chat_id, text, reply_markup=reply_markup)
-    except telebot.apihelper.ApiTelegramException as e:
-        log_and_print(f"Ошибка при отправке сообщения: {str(e)}", logging.ERROR)
+    except Exception as e:
+        log_and_print(f"Ошибка при редактировании сообщения: {str(e)}", level=logging.ERROR)
         return None
 
-def safe_reply_to(bot, message, text):
-    """Безопасный ответ на сообщение с обработкой ошибок"""
-    try:
-        return bot.reply_to(message, text)
-    except telebot.apihelper.ApiTelegramException as e:
-        log_and_print(f"Ошибка при ответе на сообщение: {str(e)}", logging.ERROR)
-        return None
-
-def safe_answer_callback(bot, callback_id, text, show_alert=False):
+def safe_answer_callback(callback_id, text, show_alert=False):
     """Безопасный ответ на callback с обработкой ошибок"""
     try:
         bot.answer_callback_query(callback_id, text, show_alert=show_alert)
-    except telebot.apihelper.ApiTelegramException as e:
-        log_and_print(f"Ошибка при ответе на callback: {str(e)}", logging.ERROR)
+    except Exception as e:
+        log_and_print(f"Ошибка при ответе на callback: {str(e)}", level=logging.ERROR)
 
 # Утилиты для работы с файлами
 def ensure_temp_dir():
@@ -161,22 +193,28 @@ def ensure_temp_dir():
         os.makedirs(temp_dir)
     return temp_dir
 
-def cleanup_temp_files():
-    """Улучшенная очистка временных файлов"""
+def cleanup_temp_files(max_age_hours=24):
+    """Улучшенная очистка временных файлов с учетом времени их создания"""
     try:
         temp_dir = ensure_temp_dir()
+        current_time = time.time()
+        max_age_seconds = max_age_hours * 3600
+        
         for filename in os.listdir(temp_dir):
             file_path = os.path.join(temp_dir, filename)
             try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
+                # Проверяем время создания файла
+                file_age = current_time - os.path.getctime(file_path)
+                if file_age > max_age_seconds:
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                    log_and_print(f"Удален старый временный файл: {filename}")
             except Exception as e:
-                log_and_print(f"Ошибка при удалении {file_path}: {str(e)}", logging.WARNING)
-        log_and_print("Временные файлы успешно очищены")
+                log_and_print(f"Ошибка при удалении {filename}: {str(e)}", level=logging.ERROR)
     except Exception as e:
-        log_and_print(f"Ошибка при очистке временных файлов: {str(e)}", logging.ERROR)
+        log_and_print(f"Ошибка при очистке временных файлов: {str(e)}", level=logging.ERROR)
 
 # Утилиты для обработки видео
 def get_video_info(video_path):
@@ -201,35 +239,118 @@ def get_video_info(video_path):
             'duration': duration
         }
     except Exception as e:
-        log_and_print(f"Ошибка при получении информации о видео: {str(e)}", logging.ERROR)
+        log_and_print(f"Ошибка при получении информации о видео: {str(e)}", level=logging.ERROR)
         return None
 
-def validate_video(message):
-    """Проверка видео на соответствие требованиям"""
+def validate_video(message, file_path):
+    """Проверка параметров видео"""
     try:
-        file_size_mb = message.video.file_size / (1024 * 1024)
-        if file_size_mb > 12:
-            safe_reply_to(bot, message, ERROR_MESSAGES['file_too_large'])
-            log_and_print(f"Файл слишком большой: {file_size_mb:.2f} МБ", logging.WARNING)
-            return False
+        # Проверка размера файла
+        file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
+        if file_size_mb > MAX_VIDEO_SIZE_MB:
+            log_and_print(f"⚠️ Видео превышает лимит размера: {file_size_mb:.1f}MB")
+            safe_reply_to(message, f"⚠️ Видео превышает лимит {MAX_VIDEO_SIZE_MB}MB. Начинаю сжатие...")
             
-        duration = message.video.duration
-        if duration > 60:
-            safe_reply_to(bot, message, "Видео слишком длинное. Максимальная длительность - 60 секунд")
-            log_and_print(f"Видео слишком длинное: {duration} секунд", logging.WARNING)
-            return False
+            # Сжимаем видео
+            compressed_file = compress_video(file_path, MAX_VIDEO_SIZE_MB)
+            if compressed_file and compressed_file != file_path:
+                new_size = os.path.getsize(compressed_file) / (1024 * 1024)
+                safe_reply_to(message, f"✅ Видео успешно сжато до {new_size:.1f}MB")
+                return compressed_file
             
-        return True
+        # Проверка длительности
+        video = cv2.VideoCapture(file_path)
+        duration = int(video.get(cv2.CAP_PROP_FRAME_COUNT) / video.get(cv2.CAP_PROP_FPS))
+        video.release()
+        
+        if duration > MAX_VIDEO_DURATION:
+            log_and_print(f"❌ Видео слишком длинное: {duration} секунд")
+            safe_reply_to(message, f"❌ Видео слишком длинное. Максимальная длительность: {MAX_VIDEO_DURATION} секунд")
+            return None
+            
+        return file_path
+        
     except Exception as e:
-        log_and_print(f"Ошибка при проверке видео: {str(e)}", logging.ERROR)
-        return False
+        log_and_print(f"❌ Ошибка при валидации видео: {str(e)}", level=logging.ERROR)
+        safe_reply_to(message, "❌ Ошибка при проверке видео")
+        return None
 
-def get_user_settings(user_id):
-    """Получение настроек пользователя с созданием по умолчанию при необходимости"""
-    if user_id not in user_settings:
-        user_settings[user_id] = DEFAULT_SETTINGS.copy()
-        log_and_print(f"Созданы настройки по умолчанию для пользователя ID: {user_id}")
-    return user_settings[user_id]
+def compress_video(input_file, max_size_mb=12):
+    """Сжимает видео до указанного размера"""
+    try:
+        current_size = os.path.getsize(input_file) / (1024 * 1024)  # размер в МБ
+        if current_size <= max_size_mb:
+            return input_file
+
+        log_and_print(f"🔄 Сжатие видео с {current_size:.1f}MB до {max_size_mb}MB...")
+        
+        # Создаем временный файл для сжатого видео
+        temp_dir = ensure_temp_dir()
+        compressed_file = os.path.join(temp_dir, f"compressed_{os.path.basename(input_file)}")
+        
+        # Загружаем видео
+        clip = VideoFileClip(input_file)
+        
+        # Рассчитываем целевой битрейт (немного меньше максимального размера для гарантии)
+        target_size = max_size_mb * 1024 * 1024 * 0.95  # 95% от максимального размера в байтах
+        target_bitrate = int((target_size * 8) / clip.duration)  # конвертируем в биты и делим на длительность
+        
+        # Сжимаем видео с пониженным битрейтом
+        clip.write_videofile(
+            compressed_file,
+            codec='libx264',
+            bitrate=f"{target_bitrate//1000}k",
+            preset='ultrafast',  # используем самый быстрый пресет
+            audio=False,  # отключаем аудио для уменьшения размера
+            threads=2,  # ограничиваем количество потоков для экономии памяти
+            logger=None  # отключаем логи moviepy
+        )
+        
+        # Закрываем клип для освобождения ресурсов
+        clip.close()
+        
+        # Проверяем результат
+        new_size = os.path.getsize(compressed_file) / (1024 * 1024)
+        log_and_print(f"✅ Видео успешно сжато до {new_size:.1f}MB")
+        
+        # Если размер все еще превышает лимит, пробуем еще раз с более агрессивным сжатием
+        if new_size > max_size_mb:
+            log_and_print("⚠️ Размер все еще превышает лимит, применяю дополнительное сжатие...")
+            clip = VideoFileClip(compressed_file)
+            target_bitrate = int(target_bitrate * 0.8)  # уменьшаем битрейт на 20%
+            
+            # Создаем новый файл для второй попытки
+            final_file = os.path.join(temp_dir, f"final_{os.path.basename(input_file)}")
+            
+            clip.write_videofile(
+                final_file,
+                codec='libx264',
+                bitrate=f"{target_bitrate//1000}k",
+                preset='ultrafast',
+                audio=False,
+                threads=2,
+                logger=None
+            )
+            
+            clip.close()
+            
+            # Удаляем промежуточный файл
+            try:
+                os.remove(compressed_file)
+            except:
+                pass
+                
+            compressed_file = final_file
+            new_size = os.path.getsize(compressed_file) / (1024 * 1024)
+            log_and_print(f"✅ Дополнительное сжатие завершено. Новый размер: {new_size:.1f}MB")
+        
+        return compressed_file
+        
+    except Exception as e:
+        log_and_print(f"❌ Ошибка при сжатии видео: {str(e)}", level=logging.ERROR)
+        if 'clip' in locals():
+            clip.close()
+        raise
 
 # Настройки пользователей
 user_settings = defaultdict(lambda: DEFAULT_SETTINGS.copy())
@@ -366,7 +487,7 @@ def change_size(call):
         
     except Exception as e:
         error_msg = f"Ошибка при изменении размера видео: {str(e)}"
-        log_and_print(error_msg, logging.ERROR)
+        log_and_print(error_msg, level=logging.ERROR)
         bot.answer_callback_query(call.id, f"❌ {error_msg}", show_alert=True)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("quality_"))
@@ -404,7 +525,7 @@ def change_quality(call):
         
     except Exception as e:
         error_msg = f"Ошибка при изменении качества видео: {str(e)}"
-        log_and_print(error_msg, logging.ERROR)
+        log_and_print(error_msg, level=logging.ERROR)
         bot.answer_callback_query(call.id, f"❌ {error_msg}", show_alert=True)
 
 @bot.callback_query_handler(func=lambda call: call.data == "back_to_settings")
@@ -563,32 +684,26 @@ def process_video(message, input_file, output_file):
     """Обработка видео с сохранением во временный файл"""
     try:
         user = message.from_user
-        log_and_print(f"Начинаем обработку видео от пользователя {user.username} (ID: {user.id})")
+        log_and_print(f"🎥 Начинаем обработку видео от пользователя {user.username} (ID: {user.id})")
         
         # Получаем информацию о видео
         video_info = get_video_info(input_file)
         if not video_info:
             raise Exception("Не удалось получить информацию о видео")
-            
-        log_and_print(
-            f"Параметры исходного видео:\n"
-            f"- Ширина: {video_info['width']}px\n"
-            f"- Высота: {video_info['height']}px\n"
-            f"- FPS: {video_info['fps']}\n"
-            f"- Количество кадров: {video_info['frame_count']}"
-        )
+        
+        # Проверка размера видео
+        file_size_mb = os.path.getsize(input_file) / (1024 * 1024)
+        if file_size_mb > MAX_VIDEO_SIZE_MB:
+            log_and_print(f"⚠️ Видео слишком большое: {file_size_mb:.2f} MB")
+            safe_send_message(message.chat.id, f"Видео превышает допустимый размер {MAX_VIDEO_SIZE_MB} MB")
+            return False
         
         # Получаем настройки пользователя
         settings = get_user_settings(user.id)
-        target_size = settings["video_size"]
+        target_size = 384  # Фиксированный размер для video note (384x384)
         quality = settings["video_quality"]
-        quality_params = QUALITY_SETTINGS[quality]
         
-        log_and_print(f"Применяем настройки: размер={target_size}x{target_size}, качество={quality}")
-        
-        # Создаем временные файлы в выделенной директории
-        temp_dir = ensure_temp_dir()
-        temp_output = os.path.join(temp_dir, f"temp_output_{int(time.time())}.mp4")
+        log_and_print(f"⚙️ Применяем настройки: размер={target_size}x{target_size}, качество={quality}")
         
         try:
             # Открываем исходное видео
@@ -599,7 +714,7 @@ def process_video(message, input_file, output_file):
             # Создаем выходной файл
             fourcc = cv2.VideoWriter_fourcc(*'mp4v')
             out = cv2.VideoWriter(
-                temp_output,
+                output_file,
                 fourcc,
                 video_info['fps'],
                 (target_size, target_size)
@@ -608,10 +723,12 @@ def process_video(message, input_file, output_file):
             if not out.isOpened():
                 raise Exception("Не удалось создать выходной файл")
             
-            frame_count = video_info['frame_count']
+            frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             frames_processed = 0
             start_time = time.time()
             last_progress = 0
+            
+            log_and_print(f"🎬 Начало обработки кадров. Всего кадров: {frame_count}")
             
             while True:
                 ret, frame = cap.read()
@@ -626,24 +743,21 @@ def process_video(message, input_file, output_file):
                     elapsed_time = time.time() - start_time
                     fps = frames_processed / elapsed_time if elapsed_time > 0 else 0
                     log_and_print(
-                        f"Обработано {frames_processed}/{frame_count} кадров "
+                        f"⏳ Прогресс: {frames_processed}/{frame_count} кадров "
                         f"({current_progress:.1f}%), {fps:.1f} FPS"
                     )
                     last_progress = current_progress
                 
                 # Обрабатываем кадр
-                # Изменяем размер с сохранением пропорций
                 h, w = frame.shape[:2]
                 if h > w:
                     new_h = int(h * target_size / w)
                     frame = cv2.resize(frame, (target_size, new_h))
-                    # Обрезаем центр
                     start = (new_h - target_size) // 2
                     frame = frame[start:start + target_size, :target_size]
                 else:
                     new_w = int(w * target_size / h)
                     frame = cv2.resize(frame, (new_w, target_size))
-                    # Обрезаем центр
                     start = (new_w - target_size) // 2
                     frame = frame[:target_size, start:start + target_size]
                 
@@ -668,231 +782,192 @@ def process_video(message, input_file, output_file):
                 # Записываем кадр
                 out.write(frame)
             
+            log_and_print("✅ Обработка кадров завершена")
+            
             # Освобождаем ресурсы
             cap.release()
             out.release()
             
-            elapsed_time = time.time() - start_time
-            fps = frame_count / elapsed_time if elapsed_time > 0 else 0
-            log_and_print(
-                f"Обработка OpenCV завершена. "
-                f"Обработано {frame_count} кадров за {elapsed_time:.1f} секунд"
+            # Конвертируем в формат, поддерживаемый Telegram для video note
+            temp_dir = ensure_temp_dir()
+            final_output = os.path.join(temp_dir, f"final_{os.path.basename(output_file)}")
+            
+            clip = VideoFileClip(output_file)
+            clip.write_videofile(
+                final_output,
+                codec='libx264',
+                audio=False,
+                preset='ultrafast'
             )
+            clip.close()
             
-            # Конвертируем в H.264 с заданным качеством
-            log_and_print("Конвертируем видео в H.264...")
+            # Перемещаем финальное видео
+            shutil.move(final_output, output_file)
             
-            ffmpeg_cmd = [
-                'ffmpeg',
-                '-y',  # Перезаписывать файл если существует
-                '-i', temp_output,  # Входной файл
-                '-c:v', 'libx264',  # Кодек H.264
-                '-preset', quality_params['preset'],  # Предустановка качества
-                '-b:v', quality_params['bitrate'],  # Битрейт
-                '-movflags', '+faststart',  # Оптимизация для веб
-                output_file  # Выходной файл
-            ]
+            if os.path.exists(output_file) and os.path.getsize(output_file) > 0:
+                log_and_print("✅ Видео успешно сохранено")
+                return True
+            else:
+                raise Exception("Ошибка при сохранении видео")
             
-            result = subprocess.run(
-                ffmpeg_cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
-            
-            if result.returncode != 0:
-                raise Exception(
-                    f"Ошибка FFmpeg: {result.stderr.decode('utf-8')}"
-                )
-            
-            log_and_print("Видео успешно конвертировано в H.264")
-            
-            # Проверяем результат
-            if not os.path.exists(output_file):
-                raise Exception("Файл не создан")
-                
-            file_size = os.path.getsize(output_file)
-            if file_size == 0:
-                raise Exception("Создан пустой файл")
-                
-            file_size_mb = file_size / (1024 * 1024)
-            log_and_print(f"Размер выходного файла: {file_size_mb:.2f} МБ")
-            
-            return True
+        except Exception as e:
+            log_and_print(f"❌ Ошибка при обработке видео: {str(e)}", level=logging.ERROR)
+            if os.path.exists(output_file):
+                try:
+                    os.remove(output_file)
+                except:
+                    pass
+            raise
             
         finally:
-            # Очищаем временные файлы
-            try:
-                if os.path.exists(temp_output):
-                    os.unlink(temp_output)
-            except Exception as e:
-                log_and_print(f"Ошибка при удалении временного файла: {str(e)}", logging.WARNING)
+            # Освобождаем ресурсы
+            if 'cap' in locals():
+                cap.release()
+            if 'out' in locals():
+                out.release()
                 
     except Exception as e:
-        error_message = f"Ошибка при обработке видео: {str(e)}"
-        log_and_print(error_message, logging.ERROR)
-        safe_reply_to(bot, message, f"❌ {error_message}")
+        error_message = f"❌ Ошибка при обработке видео: {str(e)}"
+        log_and_print(error_message, level=logging.ERROR)
         return False
+
+def send_video_with_retry(chat_id, video_path, reply_to_message_id, max_retries=3, timeout=60):
+    """Отправка видео с повторными попытками"""
+    for attempt in range(max_retries):
+        try:
+            with open(video_path, 'rb') as video:
+                log_and_print(f"📤 Попытка отправки видео {attempt + 1}/{max_retries}...")
+                return bot.send_video_note(  # Изменено на send_video_note
+                    chat_id,
+                    video,
+                    reply_to_message_id=reply_to_message_id,
+                    timeout=timeout
+                )
+        except Exception as e:
+            if attempt < max_retries - 1:
+                delay = (attempt + 1) * 5  # увеличиваем задержку с каждой попыткой
+                log_and_print(f"⚠️ Ошибка при отправке видео: {str(e)}. Повторная попытка через {delay} сек...")
+                time.sleep(delay)
+            else:
+                raise
 
 @bot.message_handler(content_types=['video'])
 def video(message):
+    """Обработчик видео с расширенной валидацией"""
     try:
         user = message.from_user
-        user_id = user.id
-        username = user.username or "Unknown"
+        log_and_print(f"📥 Получено видео от пользователя {user.username} (ID: {user.id})")
         
-        # Проверка на флуд
-        if check_flood(user_id):
-            log_and_print(f"Обнаружен флуд от пользователя {username} (ID: {user_id})", logging.WARNING)
-            safe_reply_to(bot, message, ERROR_MESSAGES['flood_control'])
+        # Проверяем флуд
+        if not check_flood(message.from_user.id):
+            log_and_print(f"⚠️ Обнаружен флуд от пользователя {user.username}")
+            safe_reply_to(message, f"⚠️ Пожалуйста, подождите {FLOOD_TIME} секунд перед отправкой следующего видео")
             return
 
-        # Проверяем видео на соответствие требованиям
-        if not validate_video(message):
-            return
-            
-        log_and_print(
-            f"Получено видео от пользователя {username} (ID: {user_id})\n"
-            f"Размер файла: {message.video.file_size / (1024 * 1024):.2f} МБ"
-        )
-
-        # Получаем настройки пользователя
-        settings = get_user_settings(user_id)
-        target_size = settings["video_size"]
-        quality = settings["video_quality"]
+        # Сообщаем о начале обработки
+        processing_msg = safe_reply_to(message, "🎥 Начинаю обработку вашего видео...")
         
-        # Получаем текстовое описание качества
-        quality_text = {
-            'high': 'высокое',
-            'medium': 'среднее',
-            'low': 'низкое'
-        }.get(quality, 'среднее')
+        log_and_print("🔍 Проверка параметров видео...")
+        safe_edit_message(message.chat.id, processing_msg.message_id, "🔍 Проверяю параметры видео...")
         
-        # Отправляем сообщение о начале обработки
-        processing_msg = safe_reply_to(
-            bot,
-            message,
-            f"⚙️ Начинаю обработку видео\n\n"
-            f"📐 Размер кружка: {target_size}x{target_size}\n"
-            f"🎨 Качество: {quality_text}\n\n"
-            f"⏳ Пожалуйста, подождите..."
-        )
+        # Очистка старых файлов
+        log_and_print("🧹 Очистка временных файлов...")
+        cleanup_temp_files()
         
-        if not processing_msg:
-            return
-        
-        log_and_print(f"Настройки пользователя: размер={target_size}, качество={quality}")
-        
-        # Создаем временные файлы в выделенной директории
+        # Создание временной директории
         temp_dir = ensure_temp_dir()
-        input_path = os.path.join(temp_dir, f"input_{int(time.time())}.mp4")
-        output_path = os.path.join(temp_dir, f"output_{int(time.time())}.mp4")
+        log_and_print("📁 Временная директория создана")
         
-        try:
-            # Скачиваем видео
-            log_and_print("Скачиваем видео...")
+        # Загрузка видео
+        log_and_print("⬇️ Загрузка видео...")
+        safe_edit_message(message.chat.id, processing_msg.message_id, "⬇️ Загружаю видео...")
+        
+        file_info = bot.get_file(message.video.file_id)
+        input_file = os.path.join(temp_dir, f"input_{file_info.file_id}.mp4")
+        downloaded_file = bot.download_file(file_info.file_path)
+        
+        with open(input_file, 'wb') as new_file:
+            new_file.write(downloaded_file)
+        
+        log_and_print("✅ Видео успешно загружено")
+        safe_edit_message(message.chat.id, processing_msg.message_id, "✅ Видео загружено\n⚙️ Проверяю размер и длительность...")
+        
+        # Валидация видео
+        validated_file = validate_video(message, input_file)
+        if not validated_file:
+            log_and_print("❌ Видео не прошло валидацию")
+            safe_edit_message(message.chat.id, processing_msg.message_id, "❌ Видео не соответствует требованиям")
+            return
+            
+        # Вывод информации о видео
+        video_info = get_video_info(validated_file)
+        if video_info:
+            info_text = (
+                "📊 Параметры видео:\n"
+                f"▫️ Размер: {os.path.getsize(validated_file) / (1024 * 1024):.1f} MB\n"
+                f"▫️ Длительность: {video_info['duration']:.1f} сек\n"
+                "🎬 Начинаю создание кругового видео..."
+            )
+            safe_edit_message(message.chat.id, processing_msg.message_id, info_text)
+            log_and_print(
+                "📊 Параметры исходного видео:\n"
+                f"- Размер: {os.path.getsize(validated_file) / (1024 * 1024):.2f} MB\n"
+                f"- Ширина: {video_info['width']}px\n"
+                f"- Высота: {video_info['height']}px\n"
+                f"- FPS: {video_info['fps']}\n"
+                f"- Длительность: {video_info['duration']:.1f} сек"
+            )
+        
+        # Обработка видео
+        log_and_print("🔄 Начало обработки видео...")
+        output_file = os.path.join(temp_dir, f"output_{file_info.file_id}.mp4")
+        
+        if process_video(message, validated_file, output_file):
+            # Отправка обработанного видео
+            log_and_print("⬆️ Отправка обработанного видео...")
+            safe_edit_message(message.chat.id, processing_msg.message_id, "⬆️ Отправляю обработанное видео...")
+            
             try:
-                file_info = bot.get_file(message.video.file_id)
-                downloaded_file = bot.download_file(file_info.file_path)
-                with open(input_path, 'wb') as f:
-                    f.write(downloaded_file)
-                log_and_print("Видео успешно скачано")
-            except Exception as e:
-                raise Exception(f"Ошибка при скачивании видео: {str(e)}")
-            
-            # Обновляем сообщение о процессе
-            safe_edit_message(
-                bot,
-                processing_msg.message_id,
-                processing_msg.chat.id,
-                f"⚙️ Обработка видео\n\n"
-                f"📐 Размер кружка: {target_size}x{target_size}\n"
-                f"🎨 Качество: {quality_text}\n\n"
-                f"📥 Видео загружено\n"
-                f"🔄 Конвертация..."
-            )
-            
-            # Обрабатываем видео
-            log_and_print("Запускаем обработку видео...")
-            success = process_video(message, input_path, output_path)
-            
-            if not success:
-                raise Exception(ERROR_MESSAGES['processing_error'])
-            
-            # Проверяем результат
-            if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
-                raise Exception(ERROR_MESSAGES['empty_file'])
-            
-            # Обновляем сообщение о процессе
-            safe_edit_message(
-                bot,
-                processing_msg.message_id,
-                processing_msg.chat.id,
-                f"⚙️ Обработка видео\n\n"
-                f"📐 Размер кружка: {target_size}x{target_size}\n"
-                f"🎨 Качество: {quality_text}\n\n"
-                f"📥 Видео загружено\n"
-                f"✅ Конвертация завершена\n"
-                f"📤 Отправка..."
-            )
-            
-            # Отправляем результат
-            log_and_print("Отправляем обработанное видео пользователю...")
-            with open(output_path, 'rb') as video:
-                sent = bot.send_video_note(message.chat.id, video)
-                if not sent:
-                    raise Exception(ERROR_MESSAGES['telegram_error'])
-            
-            log_and_print("Видео успешно отправлено")
-            
-            # Обновляем статистику
-            if user_id not in user_stats:
-                user_stats[user_id] = {"processed_videos": 0, "total_size_mb": 0}
-            user_stats[user_id]["processed_videos"] += 1
-            user_stats[user_id]["total_size_mb"] += message.video.file_size / (1024 * 1024)
-            
-            # Финальное сообщение об успешной обработке
-            safe_edit_message(
-                bot,
-                processing_msg.message_id,
-                processing_msg.chat.id,
-                f"✅ Видео успешно обработано\n\n"
-                f"📐 Размер кружка: {target_size}x{target_size}\n"
-                f"🎨 Качество: {quality_text}\n\n"
-                f"📊 Ваша статистика:\n"
-                f"🎥 Обработано видео: {user_stats[user_id]['processed_videos']}\n"
-                f"💾 Общий размер: {user_stats[user_id]['total_size_mb']:.1f} МБ"
-            )
-            
-        except Exception as e:
-            error_message = str(e)
-            log_and_print(f"Ошибка при обработке видео: {error_message}", logging.ERROR)
-            
-            # Обновляем сообщение об ошибке
-            if processing_msg:
-                safe_edit_message(
-                    bot,
-                    processing_msg.message_id,
-                    processing_msg.chat.id,
-                    f"❌ {error_message}"
+                send_video_with_retry(
+                    message.chat.id,
+                    output_file,
+                    message.message_id
                 )
-            
-        finally:
-            # Удаляем временные файлы
-            try:
-                for path in [input_path, output_path]:
-                    if os.path.exists(path):
-                        os.unlink(path)
-                log_and_print("Временные файлы удалены")
+                log_and_print("✅ Видео успешно отправлено")
+                safe_edit_message(message.chat.id, processing_msg.message_id, "✨ Готово! Ваше круговое видео отправлено")
             except Exception as e:
-                log_and_print(f"Ошибка при удалении временных файлов: {str(e)}", logging.WARNING)
-            
-            # Очищаем все временные файлы
-            cleanup_temp_files()
-            
+                error_message = f"❌ Ошибка при отправке видео: {str(e)}"
+                log_and_print(error_message, level=logging.ERROR)
+                safe_edit_message(
+                    message.chat.id,
+                    processing_msg.message_id,
+                    "❌ Не удалось отправить видео. Попробуйте еще раз или отправьте видео меньшего размера."
+                )
+        
     except Exception as e:
-        error_message = f"Критическая ошибка при обработке видео: {str(e)}"
-        log_and_print(error_message, logging.ERROR)
-        safe_reply_to(bot, message, f"❌ {error_message}")
+        error_message = f"❌ Ошибка при обработке видео: {str(e)}"
+        log_and_print(error_message, level=logging.ERROR)
+        if 'processing_msg' in locals():
+            safe_edit_message(message.chat.id, processing_msg.message_id, "❌ Произошла ошибка при обработке видео")
+        else:
+            safe_reply_to(message, "❌ Произошла ошибка при обработке видео")
+        
+    finally:
+        # Очистка временных файлов
+        log_and_print("🧹 Очистка временных файлов...")
+        cleanup_temp_files()
+
+def safe_edit_message(chat_id, message_id, text):
+    """Безопасное редактирование сообщения"""
+    try:
+        return bot.edit_message_text(
+            text,
+            chat_id=chat_id,
+            message_id=message_id
+        )
+    except Exception as e:
+        log_and_print(f"⚠️ Ошибка при редактировании сообщения: {str(e)}", level=logging.WARNING)
+        return None
 
 if __name__ == '__main__':
     try:
