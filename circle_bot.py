@@ -897,6 +897,24 @@ def video(message):
         with open(input_file, 'wb') as new_file:
             new_file.write(downloaded_file)
         
+        # Получаем информацию о загруженном файле
+        file_size_mb = os.path.getsize(input_file) / (1024 * 1024)
+        duration = message.video.duration
+        width = message.video.width
+        height = message.video.height
+        
+        # Формируем сообщение с информацией о загруженном файле
+        file_info_text = (
+            "📁 Информация о загруженном файле:\n"
+            f"▫️ Размер: {file_size_mb:.1f} MB\n"
+            f"▫️ Длительность: {duration} сек\n"
+            f"▫️ Разрешение: {width}x{height}\n"
+            f"▫️ Имя файла: {message.video.file_name if message.video.file_name else 'Без имени'}"
+        )
+        
+        # Отправляем информацию пользователю
+        safe_reply_to(message, file_info_text)
+        
         log_and_print("✅ Видео успешно загружено")
         safe_edit_message(message.chat.id, processing_msg.message_id, "✅ Видео загружено\n⚙️ Проверяю размер и длительность...")
         
