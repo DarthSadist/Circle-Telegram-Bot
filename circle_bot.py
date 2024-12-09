@@ -1,3 +1,4 @@
+# Импортируем необходимые библиотеки
 import telebot
 import os
 from dotenv import load_dotenv
@@ -149,6 +150,7 @@ MAX_VIDEO_DURATION = 60  # максимальная длительность в 
 ALLOWED_VIDEO_FORMATS = ['.mp4', '.avi', '.mov', '.mkv']
 
 # Утилиты для обработки ошибок Telegram API
+# =========================================
 def safe_reply_to(message, text):
     """Безопасный ответ на сообщение с обработкой ошибок"""
     try:
@@ -186,6 +188,7 @@ def safe_answer_callback(callback_id, text, show_alert=False):
         log_and_print(f"Ошибка при ответе на callback: {str(e)}", level=logging.ERROR)
 
 # Утилиты для работы с файлами
+# ============================
 def ensure_temp_dir():
     """Создание и проверка временной директории"""
     temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'temp')
@@ -217,6 +220,7 @@ def cleanup_temp_files(max_age_hours=24):
         log_and_print(f"Ошибка при очистке временных файлов: {str(e)}", level=logging.ERROR)
 
 # Утилиты для обработки видео
+# ============================
 def get_video_info(video_path):
     """Получение информации о видео"""
     try:
@@ -849,7 +853,7 @@ def send_video_with_retry(chat_id, video_path, reply_to_message_id, max_retries=
                     chat_id,
                     video,
                     reply_to_message_id=reply_to_message_id,
-                    timeout=timeout  # Исправлено: добавлен знак равенства
+                    timeout=timeout
                 )
         except Exception as e:
             if attempt < max_retries - 1:
