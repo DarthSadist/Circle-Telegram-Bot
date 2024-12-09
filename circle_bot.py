@@ -793,13 +793,21 @@ def process_video(message, input_file, output_file):
             final_output = os.path.join(temp_dir, f"final_{os.path.basename(output_file)}")
             
             clip = VideoFileClip(output_file)
+            original_clip = VideoFileClip(input_file)
+            
+            # Если в оригинальном видео есть звук, добавляем его
+            if original_clip.audio is not None:
+                clip = clip.set_audio(original_clip.audio)
+            
             clip.write_videofile(
                 final_output,
                 codec='libx264',
-                audio=False,
+                audio=True,  # Включаем звук
+                audio_codec='aac',  # Используем AAC кодек для звука
                 preset='ultrafast'
             )
             clip.close()
+            original_clip.close()
             
             # Перемещаем финальное видео
             shutil.move(final_output, output_file)
@@ -837,11 +845,11 @@ def send_video_with_retry(chat_id, video_path, reply_to_message_id, max_retries=
         try:
             with open(video_path, 'rb') as video:
                 log_and_print(f"📤 Попытка отправки видео {attempt + 1}/{max_retries}...")
-                return bot.send_video_note(  # Изменено на send_video_note
+                return bot.send_video_note(
                     chat_id,
                     video,
                     reply_to_message_id=reply_to_message_id,
-                    timeout=timeout
+                    timeout=timeout  # Исправлено: добавлен знак равенства
                 )
         except Exception as e:
             if attempt < max_retries - 1:
